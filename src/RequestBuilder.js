@@ -25,6 +25,8 @@ var Class = function(params) {
 
   var baseUrl = null;
 
+  var _modelClass = function(){};
+
   var _settings = _.clone(defaultSettings);
   _.extend(_settings, params);
 
@@ -65,6 +67,15 @@ var Class = function(params) {
 
     return url;
   };
+
+  this.modelClass = function(Class) {
+
+    if (!Class) {
+      return _modelClass;
+    }
+
+    _modelClass = Class;
+  }
 
   this.post = function (params, headers) {
     return this.send("POST", params, headers);
@@ -112,7 +123,7 @@ var Class = function(params) {
     $.ajax(opts)
       .done(function(response) {
 
-        var obj = new  Class();
+        var obj = new  _modelClass();
         obj.data = JSON.parse(response);
         promise.resolve(obj);
       })
@@ -128,6 +139,10 @@ var Class = function(params) {
 };
 
 Class.defaults = function(params) {
+
+  if (!params) {
+    return defaultSettings;
+  }
 
   _.extend(defaultSettings, params);
 }

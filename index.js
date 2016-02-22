@@ -1,7 +1,9 @@
 
 
 
+module.exports.defaults = function(params) {
 
-//exports.Base = Base;
+  RequestBuilder.defaults(params);
+};
 
-exports.Model = required("./src/model.js");
+module.exports.Model = required("./src/model.js");
