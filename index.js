@@ -1,9 +1,10 @@
 
 
+var RequestBuilder = require("./src/RequestBuilder.js");
+var Model = require("./src/Model.js");
 
-module.exports.defaults = function(params) {
-
+module.exports.config = function(params) {
   RequestBuilder.defaults(params);
 };
 
-module.exports.Model = required("./src/model.js");
+module.exports.Model = Model;

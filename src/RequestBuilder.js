@@ -123,9 +123,21 @@ var Class = function(params) {
     $.ajax(opts)
       .done(function(response) {
 
-        var obj = new  _modelClass();
-        obj.data = JSON.parse(response);
-        promise.resolve(obj);
+        var data = JSON.parse(response);
+        var model = null;
+
+        if (_.isArray(data)) {
+          model = [];
+
+          _.each (data, function(obj) {
+            model.push(new _modelClass(obj));
+          });
+        }
+        else if (_.isOject(data)){
+          model = new  _modelClass(data);
+        }
+
+        promise.resolve(model, response);
       })
       .fail(function(){
 

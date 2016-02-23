@@ -1,8 +1,8 @@
 
 var _ = require("underscore");
 var $ = require("jquery");
-var RequestBuilder = require("../src/RequestBuilder.js");
-var RequestBuilderDup = require("../src/RequestBuilder.js");
+var RequestBuilder = require(__dirname+"/../src/RequestBuilder.js");
+var RequestBuilderDup = require(__dirname+"/../src/RequestBuilder.js");
 var jsdom = require("jsdom");
 
 var log = console.log ;

@@ -1,6 +1,6 @@
 var _  = require('underscore');
-var Model  = require('../src/Model.js');
-var RequestBuilder  = require('../src/RequestBuilder.js');
+var Model  = require(__dirname+'/../src/Model.js');
+var RequestBuilder  = require(__dirname+'/../src/RequestBuilder.js');
 var log = console.log;
 
 RequestBuilder.defaults({
