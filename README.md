@@ -1,5 +1,6 @@
 #Wassy
 
+
 A smart REST data access library for Javascript.
 
 ###Installation
@@ -12,6 +13,7 @@ THE CODE IS NOT ON NPM YET!!
 First you need to map your URL (end point) to a Model
 
 ```
+var Wassy = require('wassy');
 var User = Wassy.Model.extend({
       config: {
         url: '/users',
@@ -99,7 +101,7 @@ var promise =
 	Comment.request({ userId: 43, comId: 100 }).get() ;
 
 ```
-Binding parameters are not always numbers they can be strings as well.
+Binding parameters are not always numbers they can be string.
 
 
 ```
@@ -112,7 +114,7 @@ var promise =
 
 #####Send headers
 
-You can define the default headers at the Model declaration
+You can define the default headers during the Model declaration.
 
 ```
 ...
@@ -126,7 +128,7 @@ var User = Wassy.Model.extend({
     });
 
 ```
-You can defined or override headers during request as well
+You will define or override default headers during request
 
 ```
 var promise = 
@@ -138,12 +140,12 @@ var promise =
 
 ```
 
-###Config Options
+###Config options
 
 ######baseUrl (default: '' )
 > Type: String
 
-######url (default: / )
+######url (default: '/' )
 > Type: String
 
 ######cache (default: true )
@@ -155,7 +157,7 @@ var promise =
 ######statusCode (default: {} )
 > Type: Object
 
-######testing (default: / )
+######testing (default: false )
 > Type: Boolean
 
 ######onBeforeRequest (default: null )
@@ -171,6 +173,9 @@ Document the following features:
 - Before request hook
 - Global config options
 - Response status code handling
+
+
+
 
 
 
