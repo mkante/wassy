@@ -1,5 +1,4 @@
 #Wassy
-===
 
 A smart REST data access library for Javascript.
 
