@@ -17,6 +17,8 @@ var defaultSettings = {
   testing: false,
 
   FIXTURES: {},
+
+  onBeforeRequest: null
 };
 
 var Class = function(params) {
@@ -29,6 +31,10 @@ var Class = function(params) {
 
   var _settings = _.clone(defaultSettings);
   _.extend(_settings, params);
+
+  if (_.has(params, 'onBeforeRequest')) {
+    _settings.onBeforeRequest = params.onBeforeRequest;
+  }
 
   this.settings  = function() {
 
@@ -99,6 +105,18 @@ var Class = function(params) {
     _.extend(httpHeaders, _settings.headers );
     _.extend(httpHeaders, headers );
 
+    if (_.isFunction(_settings.onBeforeRequest)) {
+      // A Hook to override / Add extra parameters to the request
+      var _httpObj = {
+        method: method,
+        headers: httpHeaders,
+        bindings: urlBindings,
+        params: params,
+      };
+
+      _settings.onBeforeRequest.apply(_httpObj);
+    }
+
     var options = {
       url: this.getUrl(),
       method: method,
@@ -123,7 +141,7 @@ var Class = function(params) {
     $.ajax(opts)
       .done(function(response) {
 
-        var data = JSON.parse(response);
+        var data = response;
         var model = null;
 
         if (_.isArray(data)) {
@@ -133,7 +151,7 @@ var Class = function(params) {
             model.push(new _modelClass(obj));
           });
         }
-        else if (_.isOject(data)){
+        else if (_.isObject(data)){
           model = new  _modelClass(data);
         }
 

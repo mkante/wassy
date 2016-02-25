@@ -19,7 +19,6 @@ describe("Model Spec", function() {
     expect(true).toBe(true);
   });
 
-
   it("test Model different instances", function() {
 
     var U1 = 'https://api.domain.com/shopping_carts';
@@ -156,6 +155,31 @@ describe("Model Spec", function() {
     expect(a.greeting()).toBe('hello-ha');
     expect(a.yourName()).toBe('wassy');
 
-  })
+  });
+
+  it('Test on before request', function() {
+
+    var ModelA = Model.extend({
+      config: {
+        onBeforeRequest: function() {
+          this.headers['token'] = 'abcdef';
+        },
+      }
+    });
+
+    var ModelB = ModelA.extend();
+
+    var d1 = ModelB.request().post({ userId: 123 });
+    var d2= ModelA.request().get();
+
+    //console.log(d1);
+    //console.log(d2);
+    expect(d1.method).toBe('POST');
+    expect(d1.data.userId).toBe(123);
+    expect(d1.headers.token).toBe(undefined);
+
+    expect(d2.method).toBe('GET');
+    expect(d2.headers.token).toBe('abcdef');
+  });
 
 });

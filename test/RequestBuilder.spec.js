@@ -178,4 +178,22 @@ describe ("Request builder instance", function() {
     expect(proms.data.password).toBe(P1) ;
   });
 
+  it('Test on before request hook', function() {
+
+    var req = new RequestBuilder({
+      url: '/mamamia',
+      onBeforeRequest: function() {
+        this.headers['Accept'] = 'text/json';
+        this.params['userId'] = 911;
+      },
+    });
+
+    var data = req.post({ email: 'me@nowhere.com'});
+    console.log(data)
+    expect(data.headers['Accept']).toBe('text/json');
+    expect(data.data['userId']).toBe(911);
+    expect(data.data['email']).toBe('me@nowhere.com');
+
+  });
+
 })
