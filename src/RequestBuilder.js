@@ -2,39 +2,20 @@
 
 var _ = require("underscore");
 var $ = require('jquery');
+var Config = require('./Config.js');
 
-var defaultSettings = {
-  baseUrl: null,
-
-  url: '/',
-
-  cache: true,
-
-  headers: {},
-
-  statusCode: {},
-
-  testing: false,
-
-  FIXTURES: {},
-
-  onBeforeRequest: null
-};
+var defConfig = new Config();
 
 var Class = function(params) {
 
   var urlBindings = {};
 
   var baseUrl = null;
+  var _asyncReq = true;
 
   var _modelClass = function(){};
 
-  var _settings = _.clone(defaultSettings);
-  _.extend(_settings, params);
-
-  if (_.has(params, 'onBeforeRequest')) {
-    _settings.onBeforeRequest = params.onBeforeRequest;
-  }
+  var _settings = defConfig.extend(params).params;
 
   this.settings  = function() {
 
@@ -73,6 +54,11 @@ var Class = function(params) {
 
     return url;
   };
+
+  this.async = function(bool) {
+    _asyncReq = bool;
+    return this;
+  }
 
   this.modelClass = function(Class) {
 
@@ -125,8 +111,9 @@ var Class = function(params) {
       headers: httpHeaders,
       statusCode: _settings.statusCode ,
       data: params,
+      async: _asyncReq,
     };
-
+    console.log(_settings, defConfig);
     if (_settings.testing) {
       return options;
     }
@@ -168,13 +155,13 @@ var Class = function(params) {
 
 };
 
-Class.defaults = function(params) {
+Class.config = function(params) {
 
   if (!params) {
-    return defaultSettings;
+    return defConfig ;
   }
 
-  _.extend(defaultSettings, params);
+  defConfig.set(params);
 }
 
 module.exports = Class;

@@ -7,7 +7,7 @@ var jsdom = require("jsdom");
 
 var log = console.log ;
 
-RequestBuilder.defaults({
+RequestBuilder.config({
   testing: true,
 })
 
@@ -194,6 +194,6 @@ describe ("Request builder instance", function() {
     expect(data.data['userId']).toBe(911);
     expect(data.data['email']).toBe('me@nowhere.com');
 
-  });
+  })
 
 })

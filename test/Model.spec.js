@@ -3,7 +3,7 @@ var Model  = require(__dirname+'/../src/Model.js');
 var RequestBuilder  = require(__dirname+'/../src/RequestBuilder.js');
 var log = console.log;
 
-RequestBuilder.defaults({
+RequestBuilder.config({
   testing: true
 })
 
@@ -60,6 +60,7 @@ describe("Model Spec", function() {
 
     var ModelA = Model.extend({
       config: {
+        baseUrl: 'http://api.somewhere.com',
         url: '/checkout',
         headers: {
           Token: 'apple_fruit',
@@ -74,12 +75,12 @@ describe("Model Spec", function() {
 
     var a = ModelA.request();
     var aStg = a.settings();
-    expect(a.getUrl()).toBe('/checkout') ;
+    expect(a.getUrl()).toBe('http://api.somewhere.com/checkout') ;
     expect(aStg.headers.Token).toBe('apple_fruit') ;
 
     var b = ModelB.request({ name: 'wassy' });
     var bStg = b.settings();
-    expect(b.getUrl()).toBe('/checkout/wassy') ;
+    expect(b.getUrl()).toBe('http://api.somewhere.com/checkout/wassy') ;
     expect(bStg.headers.Token).toBe('apple_fruit') ;
 
   });

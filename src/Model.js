@@ -4,7 +4,6 @@ var $ = require("jquery");
 var _ = require("underscore");
 var RequestBuilder = require("./RequestBuilder.js");
 
-
 var Model = function(params, defParams) {
 
   var _data = defParams || {};
@@ -55,7 +54,7 @@ Model.extend = function(settings) {
 
     Model.apply(this, [params, defParams]);
 
-    //Copy instance methods
+    // Copy instance methods
     for (var key in settings.methods) {
 
       var func = settings.methods[key];
@@ -91,6 +90,12 @@ Model.extend = function(settings) {
 
     this.__config = base.__config|| {};
     _.extend(this.__config,  settings.config);
+
+    var statusCode =  {} ;
+    if (_.hasOwnProperty(settings.config, 'statusCode')) {
+      statusCode = settings.config.statusCode;
+    }
+    this.__config.statusCode = statusCode;
 
     var builder = Model.request.apply(this, arguments);
     builder.modelClass(newModelClass);
