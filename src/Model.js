@@ -3,6 +3,7 @@
 var $ = require("jquery");
 var _ = require("underscore");
 var RequestBuilder = require("./RequestBuilder.js");
+var Config = require("./Config.js");
 
 var Model = function(params, defParams) {
 
@@ -35,7 +36,7 @@ var Model = function(params, defParams) {
 
 Model.request = function(urlBindings) {
 
-  var builder = new RequestBuilder(this.__config);
+  var builder = new RequestBuilder(this.__config.params);
   builder.setBindings(urlBindings);
 
   return builder;
@@ -44,6 +45,7 @@ Model.request = function(urlBindings) {
 
 Model.extend = function(settings) {
   var base = this;
+  base.__config = base.__config || RequestBuilder.config();
   settings = settings || {};
 
 
@@ -71,33 +73,12 @@ Model.extend = function(settings) {
   _.extend(_defaults, settings.props);
   newModelClass.__props = _defaults;
 
-  // Copy Static attributes
-  for (var key in base) {
-
-    if (base.hasOwnProperty(key)) {
-
-      if (_.isFunction(base[key])) {
-        newModelClass[key] = base[key];
-      }
-      else {
-        newModelClass[key] = _.clone(base[key]);
-      }
-
-    }
-  }
+  _.extend(newModelClass, base);
+  newModelClass.__config = base.__config.extend(settings.config);
 
   newModelClass.request = function() {
 
-    this.__config = base.__config|| {};
-    _.extend(this.__config,  settings.config);
-
-    var statusCode =  {} ;
-    if (_.hasOwnProperty(settings.config, 'statusCode')) {
-      statusCode = settings.config.statusCode;
-    }
-    this.__config.statusCode = statusCode;
-
-    var builder = Model.request.apply(this, arguments);
+    var builder = Model.request.apply(this, arguments)
     builder.modelClass(newModelClass);
 
     return builder;
@@ -106,5 +87,7 @@ Model.extend = function(settings) {
 
   return newModelClass;
 };
+
+Model.__config = RequestBuilder.config();
 
 module.exports = Model;

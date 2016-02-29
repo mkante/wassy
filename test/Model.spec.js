@@ -169,18 +169,49 @@ describe("Model Spec", function() {
     });
 
     var ModelB = ModelA.extend();
+    var ModelC = ModelB.extend({
+      config: {
+        headers: {
+          typeC: true,
+        },
+        onBeforeRequest: function() {
+          this.headers['token'] = '911';
+        },
+      }
+    });
+    var ModelD = ModelC.extend({
+      config: {
+        headers: {
+          typeD: true,
+        },
+        onBeforeRequest: null,
+      },
+    });
 
     var d1 = ModelB.request().post({ userId: 123 });
     var d2= ModelA.request().get();
+    var d3 = ModelC.request().put();
+    var d4 = ModelD.request().delete();
 
     //console.log(d1);
     //console.log(d2);
     expect(d1.method).toBe('POST');
     expect(d1.data.userId).toBe(123);
-    expect(d1.headers.token).toBe(undefined);
+    expect(d1.headers.token).toBe('abcdef');
 
     expect(d2.method).toBe('GET');
     expect(d2.headers.token).toBe('abcdef');
+
+    expect(d3.method).toBe('PUT');
+    expect(d3.headers.typeD).toBe(undefined);
+    expect(d3.headers.typeC).toBe(true);
+    expect(d3.headers.token).toBe('911');
+
+
+    expect(d4.method).toBe('DELETE');
+    expect(d4.headers.token).toBe(undefined);
+    expect(d4.headers.typeD).toBe(true);
+    expect(d3.headers.typeC).toBe(true);
   });
 
 });
