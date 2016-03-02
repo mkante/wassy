@@ -113,7 +113,7 @@ var Class = function(params) {
       data: params,
       async: _asyncReq,
     };
-    console.log(_settings, defConfig);
+
     if (_settings.testing) {
       return options;
     }

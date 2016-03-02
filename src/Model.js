@@ -21,11 +21,11 @@ var Model = function(params, defParams) {
 
   this.get = function(key, defaultVal) {
 
-    defaultVal = defaultVal || null;
+    defaultVal = (_.isUndefined(defaultVal))? null : defaultVal ;
 
     var val = _.propertyOf(_data)(key);
 
-    return (!val) ? defaultVal : val;
+    return (_.isUndefined(val) || _.isNull(val))? defaultVal : val;
   };
 
   this.set = function (key, value) {
