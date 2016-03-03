@@ -77,4 +77,68 @@ describe('get', function(){
 
   });
 
+  describe('StatusCode/Headers override', function() {
+
+    it('StatusCode Override', function() {
+
+      var a = new Config;
+      var b = a.extend({
+        statusCode: {
+          500: function() { return 'B500' ;},
+        }
+      });
+      expect(b.params.statusCode[500]()).toBe('B500');
+
+      b.set({
+        statusCode: {
+          404: function(){ return 'B404' },
+        }
+      });
+
+      expect(b.params.statusCode[500]()).toBe('B500');
+      expect(b.params.statusCode[404]()).toBe('B404');
+
+      var c = b.extend({
+        statusCode: {
+          500: function() { return 'C500' ; },
+        }
+      });
+
+      expect(c.params.statusCode[500]()).toBe('C500');
+      expect(c.params.statusCode[404]()).toBe('B404');
+    });
+
+    it('headers Override', function() {
+
+      var a = new Config;
+      var b = a.extend({
+        headers: {
+          code: 'B1',
+        }
+      });
+      expect(b.params.headers.code).toBe('B1');
+
+      b.set({
+        headers: {
+          type: 'B2',
+        }
+      });
+
+      expect(b.params.headers.code).toBe('B1');
+      expect(b.params.headers.type).toBe('B2');
+
+      var c = b.extend({
+        headers: {
+          code: 'C1',
+        }
+      });
+
+      expect(c.params.headers.code).toBe('C1');
+      expect(c.params.headers.type).toBe('B2');
+      expect(b.params.headers.code).toBe('B1');
+      expect(b.params.headers.type).toBe('B2');
+    });
+
+  });
+
 });
