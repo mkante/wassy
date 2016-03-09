@@ -214,4 +214,36 @@ describe("Model Spec", function() {
     expect(d3.headers.typeC).toBe(true);
   });
 
+  it('Test method inheritance', function() {
+    var ModelA = Model.extend({
+      methods: {
+        greeting: function() { return 'A' ;},
+        name: function() { return 'wassy' ;},
+      }
+    });
+
+    var ModelB = ModelA.extend({
+      methods: {
+        name: function() { return 'moh'; }
+      }
+    });
+    var ModelC = ModelA.extend({
+      methods: {
+        greeting: function() { return 'C' ; }
+      }
+    });
+
+    var objC = new ModelC() ;
+    var objA = new ModelA() ;
+    var objB = new ModelB() ;
+
+    expect(objA.greeting()).toBe('A');
+    expect(objA.name()).toBe('wassy');
+    expect(objB.greeting()).toBe('A');
+    expect(objB.name()).toBe('moh');
+    expect(objC.greeting()).toBe('C');
+    expect(objC.name()).toBe('wassy');
+
+  })
+
 });

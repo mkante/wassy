@@ -57,9 +57,9 @@ Model.extend = function(settings) {
     Model.apply(this, [params, defParams]);
 
     // Copy instance methods
-    for (var key in settings.methods) {
+    for (var key in _newMethods) {
 
-      var func = settings.methods[key];
+      var func = _newMethods[key];
 
       if (_.isFunction(func)) {
         this[key] = func;
@@ -72,6 +72,12 @@ Model.extend = function(settings) {
   var _defaults = _.clone(oldValues);
   _.extend(_defaults, settings.props);
   newModelClass.__props = _defaults;
+
+  // Setup methods inheritance
+  var oldFuncs= base.__methods || {};
+  var _newMethods = _.clone(oldFuncs);
+  _.extend(_newMethods, settings.methods);
+  newModelClass.__methods = _newMethods;
 
   _.extend(newModelClass, base);
   newModelClass.__config = base.__config.extend(settings.config);
