@@ -65,6 +65,9 @@ Model.extend = function(settings) {
         this[key] = func;
       }
     }
+
+    // super
+    this.super = base;
   };
 
   // Setup class default property

@@ -232,9 +232,15 @@ describe("Model Spec", function() {
         greeting: function() { return 'C' ; }
       }
     });
+    var ModelD = ModelC.extend({
+      methods: {
+        greeting: function() { return 'D' ; }
+      }
+    });
 
     var objC = new ModelC() ;
     var objA = new ModelA() ;
+    var objD = new ModelD() ;
     var objB = new ModelB() ;
 
     expect(objA.greeting()).toBe('A');
@@ -244,6 +250,8 @@ describe("Model Spec", function() {
     expect(objC.greeting()).toBe('C');
     expect(objC.name()).toBe('wassy');
 
+    expect(objD.greeting()).toBe('D');
+    expect(objD.name()).toBe('wassy');
   })
 
 });

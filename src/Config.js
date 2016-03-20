@@ -36,6 +36,7 @@ module.exports = function() {
     var _config = new self.constructor();
     _config.set(this.params);
     _config.set(params);
+    _config.super = self;
     return _config;
   };
 
