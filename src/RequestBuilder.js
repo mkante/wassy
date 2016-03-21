@@ -1,167 +1,183 @@
 "use strict";
 
 var _ = require("underscore");
+var Class = require('kaaa-class');
 var $ = require('jquery');
 var Config = require('./Config.js');
 
-var defConfig = new Config();
+var testMode = false;
 
-var Class = function(params) {
+var Request = Class.extend({
 
-  var urlBindings = {};
+  urlBindings: {},
 
-  var baseUrl = null;
-  var _asyncReq = true;
+  _asyncReq: true,
 
-  var _modelClass = function(){};
+  _modelClass: function(){},
 
-  var _settings = defConfig.extend(params).params;
+  config: Config(),
 
-  this.settings  = function() {
+  init: function(config) {
 
-    return _settings;
-  };
+    if (config) {
+      this.config = config;
+    }
 
-  this.setBindings  = function (params) {
-    _.extend(urlBindings, params);
+  },
+
+  testing: function() {
+    return testMode;
+  },
+
+  settings: function() {
+    return this.config;
+  },
+
+  setBindings: function (params) {
+    _.extend(this.urlBindings, params);
     return this;
-  };
+  },
 
-  this.getBindings  = function () {
-    return urlBindings ;
-  };
+  getBindings: function () {
+    return this.urlBindings ;
+  },
 
-  this.setBinding = function (key, val) {
+  setBinding: function (key, val) {
     var obj = {};
     obj[key] =  val;
     this.setBindings(obj);
+
     return this;
-  };
+  },
 
-  this.getBinding = function (key) {
-    return _.propertyOf(urlBindings)(key);
-  };
+  getBinding: function (key) {
+    return _.propertyOf(this.urlBindings)(key);
+  },
 
-  this.getUrl = function () {
+  getUrl: function () {
 
-    var base = (!_settings.baseUrl)? '' : _settings.baseUrl;
-    var url = base + _settings.url;
+    var base = (!this.config.baseUrl)? '' : this.config.baseUrl;
+    var url = base + this.config.url;
 
-    _.each (urlBindings, function(val, key) {
+    _.each (this.urlBindings, function(val, key) {
       var search = "{"+key+"}";
       url = url.replace(new RegExp(search, 'g'), val);
     });
 
     return url;
-  };
+  },
 
-  this.async = function(bool) {
-    _asyncReq = bool;
+  async: function(bool) {
+    this._asyncReq = bool;
     return this;
-  }
+  },
 
-  this.modelClass = function(Class) {
+  modelClass: function(Class) {
 
     if (!Class) {
-      return _modelClass;
+      return this._modelClass;
     }
 
-    _modelClass = Class;
-  }
+    this._modelClass = Class;
+  },
 
-  this.post = function (params, headers) {
+  post: function (params, headers) {
     return this.send("POST", params, headers);
-  };
+  },
 
-  this.get = function (params, headers) {
-    return  this.send("GET", params, headers);
-  };
+  get: function (params, headers) {
+    return this.send("GET", params, headers);
+  },
 
-  this.delete = function  (params, headers) {
+  delete: function  (params, headers) {
     return  this.send("DELETE", params, headers);
-  };
+  },
 
-  this.put = function (params, headers) {
+  put: function (params, headers) {
     return this.send("PUT", params, headers);
-  };
+  },
 
-  this.send = function (method, params, headers) {
+  send: function (method, params, headers) {
+
+    params = params || {};
+    headers = headers || {};
 
     var httpHeaders = {};
-    _.extend(httpHeaders, _settings.headers );
+    _.extend(httpHeaders, this.config.headers );
     _.extend(httpHeaders, headers );
 
-    if (_.isFunction(_settings.onBeforeRequest)) {
-      // A Hook to override / Add extra parameters to the request
+    if (_.isFunction(this.config.onBeforeRequest)) {
+
       var _httpObj = {
         method: method,
-        headers: httpHeaders,
-        bindings: urlBindings,
         params: params,
+        headers: httpHeaders,
+        bindings: this.urlBindings,
+        _super: this._super,
       };
-
-      _settings.onBeforeRequest.apply(_httpObj);
+      this.config.onBeforeRequest.call(_httpObj);
     }
 
     var options = {
       url: this.getUrl(),
       method: method,
-      cache: _settings.cache,
+      cache: this.config.cache,
       crossDomain: true,
       headers: httpHeaders,
-      statusCode: _settings.statusCode ,
+      statusCode: this.config.statusCode ,
       data: params,
-      async: _asyncReq,
+      async: this._asyncReq,
     };
 
-    if (_settings.testing) {
+    if (testMode) {
       return options;
     }
 
-    return __call(options);
-  }
+    return __call.apply(this, options);
+  },
 
-  var __call = function (opts) {
+});
 
-    var promise = $.Deferred();
 
-    $.ajax(opts)
-      .done(function(response) {
+function __call (opts) {
 
-        var data = response;
-        var model = null;
+  var promise = $.Deferred();
 
-        if (_.isArray(data)) {
-          model = [];
+  $.ajax(opts)
+    .done(function(response) {
 
-          _.each (data, function(obj) {
-            model.push(new _modelClass(obj));
-          });
-        }
-        else if (_.isObject(data)){
-          model = new  _modelClass(data);
-        }
+      var data = response;
+      var model = null;
 
-        promise.resolve(model, response);
-      })
-      .fail(function(){
+      if (_.isArray(data)) {
+        model = [];
 
-        promise.reject(arguments)
-      })
-    ;
+        _.each (data, function(obj) {
+          model.push(new this._modelClass(obj));
+        });
+      }
+      else if (_.isObject(data)){
+        model = new this._modelClass(data);
+      }
 
-    return promise;
-  };
+      promise.resolve(model, response);
+    })
+    .fail(function(){
 
-};
+      promise.reject(arguments)
+    })
+  ;
 
-Class.config = function(params) {
-
-  if (!params) {
-    return defConfig ;
-  }
-
-  defConfig.set(params);
+  return promise;
 }
 
-module.exports = Class;
+Request.testing = function(bool) {
+
+  if (bool == undefined) {
+    return testMode;
+  }
+
+  testMode = bool;
+};
+
+module.exports = Request;

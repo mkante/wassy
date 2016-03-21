@@ -14,7 +14,7 @@ First you need to map your URL (end point) to a Model
 
 ```
 var Wassy = require('wassy');
-var User = Wassy.Model.extend({
+var User = Wassy.Model.extends({
       config: {
         url: '/users',
         headers: {
@@ -91,7 +91,7 @@ Sometimes you need to have dynamic parameters inside URL. For example
 
 ```
 ...
-var Comment = Wassy.Model.extend({
+var Comment = Wassy.Model.extends({
       config: {
         url: '/users/{userId}/comments/{comId}',
       }
@@ -118,7 +118,7 @@ You can define the default headers during the Model declaration.
 
 ```
 ...
-var User = Wassy.Model.extend({
+var User = Wassy.Model.extends({
       config: {
         url: '/users',
         headers: {

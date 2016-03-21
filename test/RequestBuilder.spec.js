@@ -4,55 +4,50 @@ var $ = require("jquery");
 var RequestBuilder = require(__dirname+"/../src/RequestBuilder.js");
 var RequestBuilderDup = require(__dirname+"/../src/RequestBuilder.js");
 var jsdom = require("jsdom");
+var Config = require(__dirname+"/../src/Config.js");
 
 var log = console.log ;
 
-RequestBuilder.config({
-  testing: true,
-})
+RequestBuilder.testing(true);
 
 describe ("Request builder instance", function() {
 
   it("test multi import", function () {
-    var obj = new RequestBuilderDup() ;
-    var stg = obj.settings() ;
-
-    log(stg);
-    expect(stg.testing).toBe(true) ;
+    var obj = new RequestBuilderDup();
+    expect(obj.testing()).toBe(true);
 
   });
 
-  it("test settings", function () {
+  it("test config", function () {
 
     var obj = new RequestBuilder() ;
-    var stg = obj.settings() ;
+    var stg = obj.config;
 
-    log(stg);
+    log('2: ',stg);
 
     expect(stg.baseUrl).toBe(null) ;
     expect(stg.url).toBe('/') ;
     expect(stg.cache).toBe(true) ;
     expect(_.has(stg, 'headers')).toBe(true) ;
     expect(_.has(stg, 'statusCode')).toBe(true) ;
-    expect(_.has(stg, 'FIXTURES')).toBe(true) ;
-    expect(stg.testing).toBe(true) ;
+    expect(_.isObject(stg.FIXTURES)).toBe(true) ;
+    expect(obj.testing()).toBe(true) ;
   });
 
   it("test settigns with params", function () {
 
     var url = 'http://localhost/v2';
-    var obj = new RequestBuilder({
+    var obj = new RequestBuilder(Config({
       baseUrl: url,
       cache: false,
       headers: {
         'Access Code': 'my_token'
       },
-      testing: false,
       statusCode: {
         400: function() {}
       },
-    }) ;
-    var stg = obj.settings() ;
+    })) ;
+    var stg = obj.config ;
 
     log(stg);
 
@@ -63,11 +58,11 @@ describe ("Request builder instance", function() {
     expect(stg.headers['Access Code']).toBe('my_token') ;
     expect(_.has(stg, 'statusCode')).toBe(true) ;
     expect(_.isFunction(stg.statusCode[400])).toBe(true);
-    expect(_.has(stg, 'FIXTURES')).toBe(true) ;
-    expect(stg.testing).toBe(false) ;
+    expect(_.isObject(stg.FIXTURES)).toBe(true) ;
   });
 
   it("test bindings", function () {
+
     var obj = new RequestBuilder();
     obj.setBindings({ id: 23, name: 'banana'});
 
@@ -106,12 +101,12 @@ describe ("Request builder instance", function() {
 
     var E1 = 'moh@nowhere.com';
     var P1 = 'we_like_to_move_it';
-    var obj = new RequestBuilder({
+    var obj = new RequestBuilder(Config({
       url: '/accounts',
       statusCode: {
         500: function() {}
       }
-    }) ;
+    })) ;
 
     var proms = obj.post({ email: E1, password: P1});
     log(proms);
@@ -130,9 +125,9 @@ describe ("Request builder instance", function() {
 
     var E1 = 'riahnna@nowhere.com';
     var P1 = 'more_music';
-    var obj = new RequestBuilder({
+    var obj = new RequestBuilder(Config({
       url: '/grammy',
-    }) ;
+    })) ;
 
     var proms = obj.put({ email: E1, password: P1});
     log(proms);
@@ -148,9 +143,9 @@ describe ("Request builder instance", function() {
 
     var E1 = 'killer@nowhere.com';
     var P1 = 'dont_let_them_touch_you';
-    var obj = new RequestBuilder({
+    var obj = new RequestBuilder(Config({
       url: '/zombies',
-    }) ;
+    })) ;
 
     var proms = obj.delete({ email: E1, password: P1});
     log(proms);
@@ -165,9 +160,9 @@ describe ("Request builder instance", function() {
 
     var E1 = 'shreck@nowhere.com';
     var P1 = 'I love to eat';
-    var obj = new RequestBuilder({
+    var obj = new RequestBuilder(Config({
       url: '/cookies',
-    }) ;
+    })) ;
 
     var proms = obj.get({ email: E1, password: P1});
     log(proms);
@@ -180,20 +175,87 @@ describe ("Request builder instance", function() {
 
   it('Test on before request hook', function() {
 
-    var req = new RequestBuilder({
-      url: '/mamamia',
+    var req = new RequestBuilder(Config({
       onBeforeRequest: function() {
         this.headers['Accept'] = 'text/json';
         this.params['userId'] = 911;
       },
-    });
-
+    }));
     var data = req.post({ email: 'me@nowhere.com'});
     console.log(data)
     expect(data.headers['Accept']).toBe('text/json');
     expect(data.data['userId']).toBe(911);
     expect(data.data['email']).toBe('me@nowhere.com');
 
-  })
+  }),
+
+  it('Test inheritance hook', function() {
+
+    var conf1 = Config({
+      testing: true,
+      onBeforeRequest: function() {
+        this.headers['Accept'] = 'text/json';
+        this.params['userId'] = 911;
+      },
+    });
+
+    var conf2 = conf1.make({
+      onBeforeRequest: function() {
+        this.params['secret'] = 'hidden';
+      },
+    });
+
+    var conf3 = conf1.make({
+      onBeforeRequest: function() {
+        this._super();
+        this.params['secret'] = 'hidden';
+      },
+    });
+
+    var req2 = new RequestBuilder(conf2);
+    var data2 = req2.get();
+    log(data2);
+    expect(data2.headers['Accept']).toBe(undefined);
+    expect(data2.data['userId']).toBe(undefined);
+    expect(data2.data['secret']).toBe('hidden');
+
+    var req3 = new RequestBuilder(conf3);
+    var data3 = req3.post();
+    log(data3);
+    expect(data3.headers['Accept']).toBe('text/json');
+    expect(data3.data['userId']).toBe(911);
+    expect(data3.data['secret']).toBe('hidden');
+
+  });
+
+
+  describe("onBeforeRequest", function() {
+
+    var C1 = Config({
+      url: '/home',
+      onBeforeRequest: function() {
+        return "beforeA";
+      }
+    });
+
+     var C2 = C1.make ({
+        onBeforeRequest: function() {
+          return this._super()+"-"+'beforeB';
+       }
+     });
+
+    var C3 = C2.make ({
+      onBeforeRequest: function() {
+        return this._super()+"-"+'beforeC';
+      }
+    });
+
+    expect(C1.url).toBe('/home');
+    expect(C3.onBeforeRequest()).toBe('beforeA-beforeB-beforeC');
+    expect(C1.onBeforeRequest()).toBe('beforeA');
+    expect(C2.onBeforeRequest()).toBe('beforeA-beforeB');
+
+  });
+
 
 })

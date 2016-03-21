@@ -2,28 +2,26 @@
 var Config = require('../src/Config.js');
 var _ = require('underscore');
 
-describe('get', function(){
+describe('Config', function(){
 
   it('Test default params', function() {
 
-    var a = new Config;
+    var a = new Config();
 
-    expect(a.params.baseUrl).toBe(null);
-    expect(a.params.url).toBe('/');
-    expect(a.params.cache).toBe(true);
+    expect(a.baseUrl).toBe(null);
+    expect(a.url).toBe('/');
+    expect(a.cache).toBe(true);
 
-    expect(_.has(a.params,'statusCode')).toBe(true);
-    expect(_.has(a.params,'headers')).toBe(true);
-    expect(_.has(a.params,'statusCode')).toBe(true);
-
-    expect(a.params.testing).toBe(false)
+    expect(_.has(a,'statusCode')).toBe(true);
+    expect(_.has(a,'headers')).toBe(true);
+    expect(_.has(a,'statusCode')).toBe(true);
 
   });
 
   it('Test extend', function() {
 
-    var a = new Config;
-    var b = a.extend({
+    var a = Config();
+    var b = a.make({
       baseUrl: 'domain',
       cache: false,
       statusCode: {
@@ -32,48 +30,14 @@ describe('get', function(){
     });
     console.log(a, b, '----');
 
-    expect(a.params.baseUrl).toBe(null);
-    expect(a.params.url).toBe('/');
-    expect(a.params.cache).toBe(true);
-    expect(_.has(a.params.statusCode,'500')).toBe(false);
-    expect(a.params.testing).toBe(false);
+    expect(a.baseUrl).toBe(null);
+    expect(a.url).toBe('/');
+    expect(a.cache).toBe(true);
+    expect(_.has(a.statusCode,'500')).toBe(false);
 
-    expect(b.params.baseUrl).toBe('domain');
-    expect(b.params.url).toBe('/');
-    expect(b.params.cache).toBe(false);
-
-  });
-
-  it('Test set', function() {
-
-    var a = new Config;
-    var b = a.extend({
-      baseUrl: 'domain',
-      cache: false,
-      statusCode: {
-        500: function() {},
-      }
-    });
-
-    expect(_.isFunction(b.params.statusCode[500])).toBe(true);
-    expect(_.isUndefined(b.params.statusCode[404])).toBe(true);
-
-    b.set({
-      statusCode: {
-        404: function(){},
-      }
-    });
-    console.log(b);
-    expect(_.isFunction(b.params.statusCode[500])).toBe(true);
-    expect(_.isFunction(b.params.statusCode[404])).toBe(true);
-    expect(_.isUndefined(b.params.statusCode[200])).toBe(true);
-
-    var c = b.extend({
-      statusCode: {
-        200: function() {},
-      }
-    });
-    console.log(c);
+    expect(b.baseUrl).toBe('domain');
+    expect(b.url).toBe('/');
+    expect(b.cache).toBe(false);
 
   });
 
@@ -81,64 +45,81 @@ describe('get', function(){
 
     it('StatusCode Override', function() {
 
-      var a = new Config;
-      var b = a.extend({
+      var a = Config();
+      var b = a.make({
         statusCode: {
           500: function() { return 'B500' ;},
         }
       });
-      expect(b.params.statusCode[500]()).toBe('B500');
+      expect(b.statusCode[500]()).toBe('B500');
 
-      b.set({
+      var c = b.make({
         statusCode: {
-          404: function(){ return 'B404' },
-        }
-      });
-
-      expect(b.params.statusCode[500]()).toBe('B500');
-      expect(b.params.statusCode[404]()).toBe('B404');
-
-      var c = b.extend({
-        statusCode: {
+          404: function() { return 'C404' ; },
           500: function() { return 'C500' ; },
         }
       });
 
-      expect(c.params.statusCode[500]()).toBe('C500');
-      expect(c.params.statusCode[404]()).toBe('B404');
+      var d = c.make({
+        statusCode: {
+          404: function() { return this._super() ; },
+        }
+      });
+
+      expect(d.statusCode[500]()).toBe('C500');
+      expect(d.statusCode[404]()).toBe('C404');
     });
 
     it('headers Override', function() {
 
-      var a = new Config;
-      var b = a.extend({
+      var a = new Config();
+      var b = a.make({
         headers: {
           code: 'B1',
         }
       });
-      expect(b.params.headers.code).toBe('B1');
+      expect(b.headers.code).toBe('B1');
 
-      b.set({
+
+      var c = b.make({
         headers: {
-          type: 'B2',
-        }
-      });
-
-      expect(b.params.headers.code).toBe('B1');
-      expect(b.params.headers.type).toBe('B2');
-
-      var c = b.extend({
-        headers: {
+          type: 'CT',
           code: 'C1',
         }
       });
 
-      expect(c.params.headers.code).toBe('C1');
-      expect(c.params.headers.type).toBe('B2');
-      expect(b.params.headers.code).toBe('B1');
-      expect(b.params.headers.type).toBe('B2');
+      expect(c.headers.code).toBe('C1');
+      expect(c.headers.type).toBe('CT');
+      expect(b.headers.code).toBe('B1');
+      expect(b.headers.type).toBe(undefined);
     });
 
+  });
+
+  describe("onBeforeRequest", function() {
+
+    var a = new Config({
+      url: '/home',
+      onBeforeRequest: function() {
+        return "beforeA";
+      }
+    });
+
+    var b = a.make({
+      onBeforeRequest: function() {
+        return this._super()+"-"+'beforeB';
+      }
+    });
+    var c = b.make({
+      onBeforeRequest: function() {
+        return this._super()+"-"+'beforeC';
+      }
+    });
+
+    expect(a.url).toBe('/home');
+    expect(c.onBeforeRequest()).toBe('beforeA-beforeB-beforeC');
+    expect(a.onBeforeRequest()).toBe('beforeA');
+    expect(b.onBeforeRequest()).toBe('beforeA-beforeB');
   });
 
 });

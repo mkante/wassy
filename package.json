@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "jquery": "^2.2.0",
+    "kaaa-class": "0.0.7",
+    "osr-class": "^0.1.8",
     "underscore": "^1.8.3"
   },
   "repository": {
