@@ -24,7 +24,7 @@ describe("Model Spec", function() {
 
     var ModelB = Model.extends({
       config: {
-        'url': '/account/{id}',
+        url: '/account/{id}',
         headers: {
           Accept: 'text/html',
         }
@@ -255,7 +255,7 @@ describe("Model Spec", function() {
 
     expect(objB.greeting()).toBe('A');
     expect(objB.name()).toBe('moh');
-    expect(objB2.name).toBe('ok');
+    expect(objB2.name()).toBe('moh');
     expect(objB2.age).toBe(13);
 
     expect(objC.greeting()).toBe('C');
@@ -265,6 +265,28 @@ describe("Model Spec", function() {
     expect(objD.greeting()).toBe('D');
     expect(objD.name()).toBe('wassy');
     expect(objD.day()).toBe('Monday-12:04AM');
-  })
+  });
+
+  it('Prevent method overriding', function() {
+
+    var A = Model.extends({
+      props: {
+        age: 21,
+      },
+      methods: {
+        getName: function() { return 'wassy'; },
+      }
+    });
+
+
+    var a1 = new A({
+      age: 25,
+      getName: 'hahah',
+    });
+
+    expect(a1.age).toBe(25);
+    expect(a1.getName()).toBe('wassy');
+
+  });
 
 });

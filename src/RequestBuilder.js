@@ -74,7 +74,7 @@ var Request = Class.extend({
 
   modelClass: function(Class) {
 
-    if (!Class) {
+    if (_.isUndefined(Class)) {
       return this._modelClass;
     }
 
@@ -133,15 +133,16 @@ var Request = Class.extend({
       return options;
     }
 
-    return __call.apply(this, options);
+    return __ajax.call(this, options);
   },
 
 });
 
 
-function __call (opts) {
+function __ajax (opts) {
 
   var promise = $.Deferred();
+  var self = this;
 
   $.ajax(opts)
     .done(function(response) {
@@ -153,11 +154,11 @@ function __call (opts) {
         model = [];
 
         _.each (data, function(obj) {
-          model.push(new this._modelClass(obj));
+          model.push(new self._modelClass(obj));
         });
       }
       else if (_.isObject(data)){
-        model = new this._modelClass(data);
+        model = new self._modelClass(data);
       }
 
       promise.resolve(model, response);

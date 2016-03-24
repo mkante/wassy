@@ -9,7 +9,11 @@ var Class = require('kaaa-class');
 var Model = Class.extend({
 
   init: function (params) {
-    _.extend(this, params);
+
+    // Don't override defined methods
+    var classMethods = _.functions(this);
+    var filteredParams = _.omit(params, classMethods);
+    _.extend(this, filteredParams);
   },
 
   get: function(key, defaultVal) {
