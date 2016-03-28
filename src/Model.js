@@ -20,7 +20,12 @@ var Model = Class.extend({
 
     defaultVal = (_.isUndefined(defaultVal))? null : defaultVal ;
 
-    var val = _.propertyOf(this)(key);
+    var val = null;
+    try {
+      var script = "val = this." + key ;
+      eval(script);
+    }
+    catch(e){}
 
     return (_.isUndefined(val) || _.isNull(val))? defaultVal : val;
   },

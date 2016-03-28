@@ -289,4 +289,33 @@ describe("Model Spec", function() {
 
   });
 
+  it("Getter", function() {
+
+    var a = new Model({
+      name: 'wassy',
+      age: 21,
+      products: [
+        {
+          id: 1,
+          name: "product_1",
+        },
+        {
+          id: 2,
+          name: "product_2",
+        },
+      ]
+    })
+
+    expect(a.get('name')).toBe('wassy');
+    expect(a.get('firstname')).toBe(null);
+    expect(a.get('lastname', 'wassy')).toBe('wassy');
+    expect(a.get('products[0].name')).toBe('product_1');
+    expect(a.get('products[0].id')).toBe(1);
+    expect(a.get('products[0].color', 'red')).toBe('red');
+    expect(a.get('products[1].id')).toBe(2);
+    expect(a.get('products[1].name')).toBe('product_2');
+    expect(a.get('products[1].sku.number')).toBe(null);
+
+  });
+
 });
