@@ -7,8 +7,6 @@ A smart REST data access library for Javascript.
 
 `$npm install wassy `
 
-THE CODE IS NOT ON NPM YET!!
-
 ###Usage
 First you need to map your URL (end point) to a Model
 
