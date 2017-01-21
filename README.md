@@ -1,13 +1,12 @@
 #Wassy
 
 
-A smart REST data access library for Javascript.
+Wassy is a declarative REST client for Javascript. It's similar to Netflix Feign. 
+> Wassy can not be use for server side node development since it's dependent to jQuery
 
 ###Installation
 
 `$npm install wassy `
-
-THE CODE IS NOT ON NPM YET!!
 
 ###Usage
 First you need to map your URL (end point) to a Model
