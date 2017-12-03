@@ -27,6 +27,10 @@ class RequestParameter {
       cookies: Object.create(this.cookies),
     };
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 
 export default RequestParameter;
