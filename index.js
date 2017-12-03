@@ -1,6 +1,20 @@
+import _ from 'lodash';
+import RestEndpoint from './src/endpoint';
 
+/**
+ * Create a new RestEndpoint
+ * @param params
+ * @returns {Endpoint}
+ * @constructor
+ */
+function Endpoint(params) {
+  return RestEndpoint.create(params);
+}
 
-//var RequestBuilder = require("./src/RequestBuilder.js");
-var Model = require("./src/Model.js");
+/**
+ *
+ * @constructor
+ */
+function RestClient() {}
 
-module.exports.Model = Model;
+export default { Endpoint, RestClient };

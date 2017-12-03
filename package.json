@@ -1,29 +1,41 @@
 {
   "name": "wassy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "REST endpoint Model",
-  "main": "lib/wassy.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "jasmine-node --verbose --test-dir test 2>&1",
-    "build": "webpack --config webpack.config.js "
+    "lint": "eslint --ext .js src test/unit",
+    "test": "npm run lint && mocha --compilers js:babel-core/register --recursive test",
+    "build": "npm run test && babel src -d lib"
   },
   "keywords": [
     "REST",
-    "model"
+    "flint"
   ],
   "author": "moh kante",
   "license": "ISC",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.0.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015": "^6.24.1",
+    "chai": "^4.1.2",
+    "eslint": "^4.12.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-google": "^0.9.1",
+    "eslint-plugin-import": "^2.8.0",
     "jasmine-core": "^2.4.1",
     "jasmine-node": "^1.14.5",
     "jsdom": "^8.0.4",
+    "logmorphic": "0.0.5",
+    "mocha": "^4.0.1",
+    "nock": "^9.1.4",
     "webpack": "^1.12.14"
   },
   "dependencies": {
     "jquery": "^2.2.0",
-    "kaaa-class": "0.0.7",
-    "osr-class": "^0.1.8",
-    "underscore": "^1.8.3"
+    "lodash": "^4.17.4",
+    "osr-class": "^0.1.8"
   },
   "repository": {
     "type": "git",
