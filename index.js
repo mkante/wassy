@@ -17,4 +17,4 @@ function Endpoint(params) {
  */
 function RestClient() {}
 
-export default { Endpoint, RestClient };
+module.exports = { Endpoint, RestClient };

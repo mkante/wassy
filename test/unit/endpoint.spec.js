@@ -6,7 +6,7 @@ import Endpoint from '../../src/endpoint';
 const { log } = console;
 
 describe('Endpoint Spec', () => {
-  it.only('test Model different instances', () => {
+  it('test Model different instances', () => {
     const U1 = 'https://api.domain.com';
     const EndA = Endpoint.create({
       host: 'https://api.domain.com',
@@ -33,7 +33,7 @@ describe('Endpoint Spec', () => {
     assert.equal(b.headers.Accept, 'text/html');
   });
 
-  it('test Model inheretance', () => {
+  it.only('test Model inheretance', () => {
     const ModelA = Endpoint.create({
       baseUrl: 'http://api.somewhere.com',
       url: '/checkout',

@@ -33,4 +33,4 @@ class RequestParameter {
   }
 }
 
-export default RequestParameter;
+module.exports = RequestParameter;

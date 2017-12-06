@@ -33,9 +33,9 @@
     "webpack": "^1.12.14"
   },
   "dependencies": {
-    "jquery": "^2.2.0",
+    "browser-request": "^0.3.3",
     "lodash": "^4.17.4",
-    "osr-class": "^0.1.8"
+    "request": "^2.83.0"
   },
   "repository": {
     "type": "git",
