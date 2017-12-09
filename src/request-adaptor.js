@@ -1,10 +1,12 @@
 /* eslint global-require: "off" */
 import _ from 'lodash';
+import Promise from 'promise-polyfill';
 import Model from './model';
 
 let rp = null;
 if (global.document) {
   rp = require('browser-request');
+  window.Promise = Promise;
 } else {
   rp = require('request');
 }
