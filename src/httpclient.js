@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import request from './request';
+import request from './request-adaptor';
 
 class HttpClient {
   constructor({
@@ -7,13 +7,15 @@ class HttpClient {
     headers = {},
     cookies = {},
     model,
+    postRequest = {},
+    preRequest = _.noop,
   }) {
     this.url = url;
     this.headers = headers;
     this.cookies = cookies;
-    this.statusCode = {};
-    this.beforeHook = _.noop();
-    this.modelProperties = model;
+    this.postRequest = postRequest;
+    this.preRequest = preRequest;
+    this.model = model;
   }
 
   post(params, headers) {
@@ -32,33 +34,25 @@ class HttpClient {
     return this.send('PUT', params, headers);
   }
 
+  head(params, headers) {
+    return this.send('HEAD', params, headers);
+  }
+
   send(method, params, headers) {
     const httpHeaders = {};
-    _.merge(httpHeaders, this.headers);
-    _.merge(httpHeaders, headers);
-
-    if (_.isFunction(this.beforeHook)) {
-      const _httpObj = {
-        method,
-        params,
-        headers: httpHeaders,
-        bindings: this.urlBindings,
-        _super: this._super,
-      };
-      this.beforeHook.call(_httpObj);
-    }
+    _.merge(httpHeaders, this.headers, headers);
 
     const options = {
       url: this.url,
       method,
-      // cache: false,
-      // crossDomain: true,
       headers: httpHeaders,
-      statusCode: this.statusCode,
       body: params,
-      // async: this.asyncReq,
     };
-    return request.call(this, options, this.modelProperties);
+    if (_.isFunction(this.preRequest)) {
+      this.preRequest(options);
+    }
+    options.postRequest = this.postRequest;
+    return request.call(this, options, this.model);
   }
 }
 

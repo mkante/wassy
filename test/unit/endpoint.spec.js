@@ -1,31 +1,105 @@
-import { expect, assert } from 'chai';
-// import nock from 'nock';
-import Model from '../../src/model';
+import { assert } from 'chai';
+import nock from 'nock';
 import Endpoint from '../../src/endpoint';
 
 const { log } = console;
 
+nock('http://localhost')
+  .get('/account')
+  .reply(200, {
+    name: 'wassy',
+    age: 24,
+  })
+  .persist();
+
+nock('http://localhost')
+  .get('/users/200')
+  .reply(200, {
+    name: 'wassy',
+    age: 24,
+  })
+  .persist();
+
+nock('http://kante.net', {
+  reqheaders: {
+    token: 'abcdef',
+  },
+}).post('/organisations')
+  .reply(200, {
+    userId: 123,
+  })
+  .persist();
+
+nock('http://kante.net', {
+  reqheaders: {
+    token: 'abcdef',
+  },
+}).get('/organisations')
+  .reply(200)
+  .persist();
+
+nock('http://kante.net', {
+  reqheaders: {
+    token: '911',
+  },
+}).put('/organisations')
+  .reply(200)
+  .persist();
+
+nock('http://kante.net', {
+  reqheaders: {
+    typeD: true,
+  },
+}).delete('/organisations')
+  .reply(200)
+  .persist();
+
+nock('http://kante.net', {
+  reqheaders: {
+    typeC: true,
+    status: 400,
+  },
+}).delete('/organisations')
+  .reply(200)
+  .persist();
+
+nock('http://wassy.net')
+  .get('/friends')
+  .reply(200, {
+    products: [
+      {
+        id: 1,
+        name: 'product_1',
+      },
+      {
+        id: 2,
+        name: 'product_2',
+      },
+    ],
+  })
+  .persist();
+
 describe('Endpoint Spec', () => {
   it('test Model different instances', () => {
     const U1 = 'https://api.domain.com';
-    const EndA = Endpoint.create({
+    const EndA = Endpoint({
       host: 'https://api.domain.com',
       uri: '/shopping_carts',
       headers: {
         Accept: 'text/json',
       },
     });
-    const a = EndA.request();
+    const a = new EndA();
 
-    const ModelB = EndA.extends({
+    const EndB = EndA.extends({
       uri: '/account/{id}',
       headers: {
         Accept: 'text/html',
       },
     });
-    const b = ModelB.request({ id: 20 });
+    const b = new EndB({ id: 20 });
 
-    log(a);
+    log(a); log(b);
     assert.equal(a.url, `${U1}/shopping_carts`);
     assert.equal(a.headers.Accept, 'text/json');
 
@@ -33,85 +107,90 @@ describe('Endpoint Spec', () => {
     assert.equal(b.headers.Accept, 'text/html');
   });
 
-  it.only('test Model inheretance', () => {
-    const ModelA = Endpoint.create({
-      baseUrl: 'http://api.somewhere.com',
-      url: '/checkout',
+  it('test Model inheretance', () => {
+    const EndA = Endpoint({
+      host: 'http://api.somewhere.com',
+      uri: '/checkout',
       headers: {
         Token: 'apple_fruit',
       },
     });
-    const ModelB = ModelA.extends({ url: '/checkout/{name}' });
+    const EndB = EndA.extends({ uri: '/checkout/{name}' });
 
-    const a = ModelA.request();
-    const aStg = a.settings();
-    expect(a.getUrl()).toBe('http://api.somewhere.com/checkout');
-    expect(aStg.headers.Token).toBe('apple_fruit');
+    const a = new EndA();
+    assert.equal(a.url, 'http://api.somewhere.com/checkout');
+    assert.equal(a.headers.Token, 'apple_fruit');
 
-    const b = ModelB.request({ name: 'wassy' });
-    const bStg = b.settings();
-    expect(b.getUrl()).toBe('http://api.somewhere.com/checkout/wassy');
-    expect(bStg.headers.Token).toBe('apple_fruit');
+    const b = new EndB({ name: 'wassy' });
+    assert.equal(b.url, 'http://api.somewhere.com/checkout/wassy');
+    assert.equal(b.headers.Token, 'apple_fruit');
   });
 
   it('test Model properties inheretance', () => {
-    const a = Endpoint.create({
+    const A = Endpoint({
       model: {
         name: 'wassy',
         age: 24,
       },
     });
-    const b = Endpoint.create({
+    const B = A.extends({
       model: {
         age: 22,
       },
     });
-
-    const c = a.extends({
+    const C = A.extends({
       model: {
         name: 'moh',
       },
     });
-    const d = a.extends({
+    const D = A.extends({
       model: {
         name: 'sasha',
         age: 18,
       },
     });
+    const a = new A();
+    const b = new B();
+    const c = new C();
+    const d = new D();
 
-    expect(a.get('name')).toBe('wassy');
-    expect(a.get('age')).toBe(24);
+    assert.equal(a.model.name, 'wassy');
+    assert.equal(a.model.age, 24);
 
-    expect(b.get('name')).toBe('wassy');
-    expect(b.get('age')).toBe(22);
+    assert.equal(b.model.name, 'wassy');
+    assert.equal(b.model.age, 22);
 
-    expect(d.get('name')).toBe('sasha');
-    expect(d.get('age')).toBe(18);
+    assert.equal(d.model.name, 'sasha');
+    assert.equal(d.model.age, 18);
 
-    expect(c.get('name')).toBe('moh');
-    expect(c.get('age')).toBe(24);
+    assert.equal(c.model.name, 'moh');
+    assert.equal(c.model.age, 24);
   });
 
-  it('test Model getter', () => {
-    const a = Endpoint.create({
-      model: {
-        name: 'wassy',
-        age: 24,
-      },
+  it('test Model getter', (done) => {
+    const A = Endpoint({
+      uri: '/account',
     });
+    const a = new A();
+    log(a);
+    a.get().then(({ model }) => {
+      assert.equal(model.name, 'wassy');
+      assert.equal(model.get('name'), 'wassy');
 
-    expect(a.name).toBe('wassy');
-    expect(a.get('name')).toBe('wassy');
-
-    // default
-    expect(a.get('likes', '2k')).toBe('2k');
+      // default
+      assert.equal(model.get('likes', '2k'), '2k');
+      done();
+    }).catch((err) => {
+      log(err);
+    });
   });
 
-  it('test Model methods inheretance', () => {
-    const ModelA = Endpoint.create({
+  it('test Model methods inheretance', (done) => {
+    const A = Endpoint({
+      uri: '/users/{id}',
       model: {
-        name: 'wassy',
-        age: 24,
+        name: null,
+        age: null,
         greeting() {
           return 'hello-ha';
         },
@@ -121,73 +200,98 @@ describe('Endpoint Spec', () => {
       },
     });
 
-    const a = new ModelA();
-    expect(a.greeting()).toBe('hello-ha');
-    expect(a.yourName()).toBe('wassy');
+    const a = new A({ id: 200 });
+    a.get().then(({ model }) => {
+      assert.equal(model.greeting(), 'hello-ha');
+      assert.equal(model.yourName(), 'wassy');
+      done();
+    });
   });
 
-  it('Test on before request', () => {
-    const ModelA = Endpoint.create({
-      beforeHook() {
-        this.headers.token = 'abcdef';
+  describe('Test on before request', () => {
+    const A = Endpoint({
+      host: 'http://kante.net',
+      uri: '/organisations',
+      preRequest: (opts) => {
+        opts.headers.token = 'abcdef';
       },
     });
 
-    const ModelB = ModelA.extends();
-    const ModelC = ModelB.extends({
+    const B = A.extends();
+    const C = B.extends({
       headers: {
         typeC: true,
       },
-      beforeHook() {
-        this.headers.token = '911';
+      preRequest: (opts) => {
+        opts.headers.token = '911';
       },
     });
-    const ModelD = ModelC.extends({
+    const D = C.extends({
       headers: {
         typeD: true,
       },
-      beforeHook: null,
+      preRequest: null,
     });
 
-    const ModelE = ModelC.extends({
-      beforeHook() {
-        this._super();
-        this.headers.status = 400;
+    const E = C.extends({
+      preRequest: (opts) => {
+        opts.headers.status = 400;
       },
     });
 
-    const d1 = ModelB.request().post({ userId: 123 });
-    const d2 = ModelA.request().get();
-    const d3 = ModelC.request().put();
-    const d4 = ModelD.request().delete();
-    const d5 = ModelE.request().delete();
-
     // log(d1);
     // log(d2);
-    expect(d1.method).toBe('POST');
-    expect(d1.data.userId).toBe(123);
-    expect(d1.headers.token).toBe('abcdef');
+    it('#d1', (done) => {
+      new B().post({ userId: 123 })
+        .then(({ model, request }) => {
+          assert.equal(request.method, 'POST');
+          assert.equal(model.userId, 123);
+          assert.equal(request.headers.token, 'abcdef');
+          done();
+        }).catch((e) => { log(e); });
+    });
 
-    expect(d2.method).toBe('GET');
-    expect(d2.headers.token).toBe('abcdef');
+    it('#d2', (done) => {
+      new A().get()
+        .then(({ request }) => {
+          assert.equal(request.method, 'GET');
+          assert.equal(request.headers.token, 'abcdef');
+          done();
+        });
+    });
 
-    expect(d3.method).toBe('PUT');
-    expect(d3.headers.typeD).toBe(undefined);
-    expect(d3.headers.typeC).toBe(true);
-    expect(d3.headers.token).toBe('911');
+    it('#d3', (done) => {
+      new C().put().then(({ request }) => {
+        assert.equal(request.method, 'PUT');
+        assert.equal(request.headers.typeD, undefined);
+        assert.equal(request.headers.typeC, true);
+        assert.equal(request.headers.token, '911');
+        done();
+      });
+    });
 
+    it('#d4', (done) => {
+      new D().delete()
+        .then(({ request }) => {
+          assert.equal(request.method, 'DELETE');
+          assert.equal(request.headers.token, undefined);
+          assert.equal(request.headers.typeD, true);
+          assert.equal(request.headers.typeC, true);
+          done();
+        });
+    });
 
-    expect(d4.method).toBe('DELETE');
-    expect(d4.headers.token).toBe(undefined);
-    expect(d4.headers.typeD).toBe(true);
-    expect(d3.headers.typeC).toBe(true);
-
-    log(d5);
-    expect(d5.headers.typeC).toBe(true);
-    expect(d5.headers.token).toBe('911');
-    expect(d5.headers.status).toBe(400);
+    it('#d5', (done) => {
+      new E().delete()
+        .then(({ request }) => {
+          assert.equal(request.headers.typeC, true);
+          assert.equal(request.headers.status, 400);
+          done();
+        });
+    });
   });
 
+  /*
   it('Test method inheritance', () => {
     const ModelA = Model.extends({
       model: {
@@ -242,49 +346,51 @@ describe('Endpoint Spec', () => {
     expect(objD.name()).toBe('wassy');
     expect(objD.day()).toBe('Monday-12:04AM');
   });
+  */
 
   it('Prevent method overriding', () => {
-    const A = Endpoint.create({
+    const A = Endpoint({
+      host: 'http://kante.net',
+      uri: '/organisations',
       model: {
         age: 21,
         getName() { return 'wassy'; },
       },
     });
 
-
-    const a1 = A.extends({
+    const a1 = new (A.extends({
       age: 25,
       getName: 'hahah',
-    });
+    }))();
 
-    expect(a1.age).toBe(25);
-    expect(a1.getName()).toBe('wassy');
+    a1.get().then(({ model }) => {
+      assert.equal(model.age, 25);
+      assert.equal(model.getName(), 'wassy');
+    });
   });
 
-  it('Getter', () => {
-    const a = new Model({
-      name: 'wassy',
-      age: 21,
-      products: [
-        {
-          id: 1,
-          name: 'product_1',
-        },
-        {
-          id: 2,
-          name: 'product_2',
-        },
-      ],
+  it('Getter', (done) => {
+    const A = Endpoint({
+      host: 'http://wassy.net',
+      uri: '/friends',
+      model: {
+        name: 'wassy',
+        age: 21,
+        products: [],
+      },
     });
 
-    expect(a.get('name')).toBe('wassy');
-    expect(a.get('firstname')).toBe(null);
-    expect(a.get('lastname', 'wassy')).toBe('wassy');
-    expect(a.get('products[0].name')).toBe('product_1');
-    expect(a.get('products[0].id')).toBe(1);
-    expect(a.get('products[0].color', 'red')).toBe('red');
-    expect(a.get('products[1].id')).toBe(2);
-    expect(a.get('products[1].name')).toBe('product_2');
-    expect(a.get('products[1].sku.number')).toBe(null);
+    new A().get().then(({ model }) => {
+      assert.equal(model.get('name'), 'wassy');
+      assert.equal(model.get('firstname'), null);
+      assert.equal(model.get('lastname', 'wassy'), 'wassy');
+      assert.equal(model.get('products[0].name'), 'product_1');
+      assert.equal(model.get('products[0].id'), 1);
+      assert.equal(model.get('products[0].color', 'red'), 'red');
+      assert.equal(model.get('products[1].id'), 2);
+      assert.equal(model.get('products[1].name'), 'product_2');
+      assert.equal(model.get('products[1].sku.number'), null);
+      done();
+    });
   });
 });

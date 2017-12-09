@@ -10,15 +10,27 @@ if (global.document) {
 }
 
 function toReponseItemModel(responseData, modelProperties) {
+  if (typeof responseData !== 'object') {
+    return responseData;
+  }
   const item = {};
   _.merge(item, modelProperties, responseData);
   return new Model(item);
+}
+
+function handlePostRequest(err, response, postHandlers) {
+  const code = _.get(response, 'statusCode');
+  if (!_.has(postHandlers, code)) {
+    return;
+  }
+  postHandlers[code](err, response);
 }
 
 module.exports = (opts, modelDefinition) => {
   opts.json = true;
   const promise = new Promise((resolve, reject) => {
     rp(opts, (err, response, data) => {
+      handlePostRequest(err, response, opts.postRequest);
       if (err) {
         reject(err, response);
         return;
@@ -38,7 +50,8 @@ module.exports = (opts, modelDefinition) => {
         model = data;
       }
 
-      resolve(model, response);
+      response.model = model;
+      resolve(response);
     });
   });
   return promise;
