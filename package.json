@@ -45,9 +45,7 @@
     "webpack": "^1.12.14"
   },
   "dependencies": {
-    "browser-request": "^0.3.3",
     "lodash": "^4.17.4",
-    "promise-polyfill": "6.1.0",
     "request": "^2.83.0"
   },
   "repository": {

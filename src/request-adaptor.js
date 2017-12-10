@@ -1,15 +1,7 @@
 /* eslint global-require: "off" */
 import _ from 'lodash';
-import Promise from 'promise-polyfill';
+import rp from 'request';
 import Model from './model';
-
-let rp = null;
-if (global.document) {
-  rp = require('browser-request');
-  window.Promise = Promise;
-} else {
-  rp = require('request');
-}
 
 function toReponseItemModel(responseData, modelProperties) {
   if (typeof responseData !== 'object') {
