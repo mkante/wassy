@@ -1,89 +1,19 @@
 import { assert } from 'chai';
-import nock from 'nock';
 import Endpoint from '../../src/endpoint';
+import { mockMostRecent } from '../util';
 
 const { log } = console;
-nock.disableNetConnect();
-nock('http://localhost')
-  .get('/account')
-  .reply(200, {
-    name: 'wassy',
-    age: 24,
-  }, {
-    'Access-Control-Allow-Origin': '*',
-  })
-  .persist();
-
-nock('http://localhost')
-  .get('/users/200')
-  .reply(200, {
-    name: 'wassy',
-    age: 24,
-  })
-  .persist();
-
-nock('http://kante.net', {
-  reqheaders: {
-    token: 'abcdef',
-  },
-}).post('/organisations')
-  .reply(200, {
-    userId: 123,
-  })
-  .persist();
-
-nock('http://kante.net', {
-  reqheaders: {
-    token: 'abcdef',
-  },
-}).get('/organisations')
-  .reply(200)
-  .persist();
-
-nock('http://kante.net', {
-  reqheaders: {
-    token: '911',
-  },
-}).put('/organisations')
-  .reply(200)
-  .persist();
-
-nock('http://kante.net', {
-  reqheaders: {
-    typeD: true,
-  },
-}).delete('/organisations')
-  .reply(200)
-  .persist();
-
-nock('http://kante.net', {
-  reqheaders: {
-    typeC: true,
-    status: 400,
-  },
-}).delete('/organisations')
-  .reply(200, null, {
-    'Acces-Control-Allow-Origin': '*',
-  })
-  .persist();
-
-nock('http://wassy.net')
-  .get('/friends')
-  .reply(200, {
-    products: [
-      {
-        id: 1,
-        name: 'product_1',
-      },
-      {
-        id: 2,
-        name: 'product_2',
-      },
-    ],
-  })
-  .persist();
 
 describe(__filename, () => {
+  beforeEach(() => {
+    jasmine.Ajax.install();
+  });
+
+  afterEach(() => {
+    jasmine.Ajax.uninstall();
+  });
+
+
   it('test Model different instances', () => {
     const U1 = 'https://api.domain.com';
     const EndA = Endpoint({
@@ -177,13 +107,18 @@ describe(__filename, () => {
     });
     const a = new A();
     log(a);
-    return a.get().then(({ model }) => {
+    const prms = a.get().then(({ model }) => {
       assert.equal(model.name, 'wassy');
       assert.equal(model.get('name'), 'wassy');
 
       // default
       assert.equal(model.get('likes', '2k'), '2k');
     });
+    mockMostRecent({
+      body: { name: 'wassy' },
+    });
+
+    return prms;
   });
 
   it('test Model methods inheretance', () => {
@@ -202,10 +137,15 @@ describe(__filename, () => {
     });
 
     const a = new A({ id: 200 });
-    return a.get().then(({ model }) => {
+    const prms = a.get().then(({ model }) => {
       assert.equal(model.greeting(), 'hello-ha');
       assert.equal(model.yourName(), 'wassy');
+      assert.equal(model.get('age'), 40);
     });
+    mockMostRecent({
+      body: { name: 'wassy', age: 40 },
+    });
+    return prms;
   });
 
   describe('Test on before request', () => {
@@ -243,51 +183,64 @@ describe(__filename, () => {
     // log(d2);
     it('#d1', () => {
       const b = new B();
-      return b.post({ userId: 123 })
+      const prms = b.post({ userId: 123 })
         .then(({ model, request }) => {
           assert.equal(request.method, 'POST');
           assert.equal(model.userId, 123);
           assert.equal(request.headers.token, 'abcdef');
         });
+      mockMostRecent({
+        status: 200,
+        body: { userId: 123, age: 40 },
+      });
+      return prms;
     });
 
     it('#d2', () => {
       const a = new A();
-      return a.get()
+      const prms = a.get()
         .then(({ request }) => {
           assert.equal(request.method, 'GET');
           assert.equal(request.headers.token, 'abcdef');
         });
+      mockMostRecent();
+      return prms;
     });
 
     it('#d3', () => {
       const c = new C();
-      return c.put().then(({ request }) => {
+      const prms = c.put().then(({ request }) => {
         assert.equal(request.method, 'PUT');
         assert.equal(request.headers.typeD, undefined);
         assert.equal(request.headers.typeC, true);
         assert.equal(request.headers.token, '911');
       });
+      mockMostRecent();
+      return prms;
     });
 
     it('#d4', () => {
       const d = new D();
-      return d.delete()
+      const prms = d.delete()
         .then(({ request }) => {
           assert.equal(request.method, 'DELETE');
           assert.equal(request.headers.token, undefined);
           assert.equal(request.headers.typeD, true);
           assert.equal(request.headers.typeC, true);
         });
+      mockMostRecent();
+      return prms;
     });
 
     it('#d5', () => {
       const e = new E();
-      return e.delete()
+      const prms = e.delete()
         .then(({ request }) => {
           assert.equal(request.headers.typeC, true);
           assert.equal(request.headers.status, 400);
         });
+      mockMostRecent();
+      return prms;
     });
   });
 
@@ -363,10 +316,12 @@ describe(__filename, () => {
       getName: 'hahah',
     }))();
 
-    a1.get().then(({ model }) => {
-      assert.equal(model.age, 25);
+    const prms = a1.get().then(({ model }) => {
+      assert.equal(model.age, 21);
       assert.equal(model.getName(), 'wassy');
     });
+    mockMostRecent();
+    return prms;
   });
 
   it('Getter', () => {
@@ -381,7 +336,7 @@ describe(__filename, () => {
     });
 
     const a = new A();
-    return a.get().then(({ model }) => {
+    const prms = a.get().then(({ model }) => {
       assert.equal(model.get('name'), 'wassy');
       assert.equal(model.get('firstname'), null);
       assert.equal(model.get('lastname', 'wassy'), 'wassy');
@@ -392,5 +347,20 @@ describe(__filename, () => {
       assert.equal(model.get('products[1].name'), 'product_2');
       assert.equal(model.get('products[1].sku.number'), null);
     });
+    mockMostRecent({
+      body: {
+        products: [
+          {
+            id: 1,
+            name: 'product_1',
+          },
+          {
+            id: 2,
+            name: 'product_2',
+          },
+        ],
+      },
+    });
+    return prms;
   });
 });

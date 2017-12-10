@@ -1,45 +1,19 @@
 import { assert } from 'chai';
-import nock from 'nock';
 import _ from 'lodash';
+import { mockMostRecent } from '../util';
 import HttpClient from '../../src/httpclient';
 
 const { log } = console;
 
-const nockServer = nock('http://nowhere.com');
-nockServer.get('/users/1')
-  .reply(200, {
-    name: 'wassy',
-  });
-
-nockServer
-  .post('/users', {
-    name: 'Kante',
-  })
-  .reply(200, {
-    id: 434343,
-  })
-  .persist();
-
-nockServer
-  .get('/users/1000')
-  .reply(501)
-  .persist();
-
-nock('http://nowhere.com', {
-  reqheaders: {
-    Accept: 'text/json',
-  },
-})
-  .get('/fruits')
-  .reply(200, [
-    'banana',
-    'apple',
-    'orange',
-  ])
-  .persist();
-
 
 describe(__filename, () => {
+  beforeEach(() => {
+    jasmine.Ajax.install();
+  });
+
+  afterEach(() => {
+    jasmine.Ajax.uninstall();
+  });
   let client = null;
 
   describe('#default parameters', () => {
@@ -48,46 +22,54 @@ describe(__filename, () => {
   });
 
   describe('test HTTP Methods', () => {
-    it('#get', (done) => {
+    it('#get', () => {
       client = new HttpClient({
         url: 'http://nowhere.com/users/1',
       });
-      client.get()
+      const prms = client.get()
         .then(({ model }) => {
           log(model);
           assert.equal(model.name, 'wassy');
-          done();
         });
+
+      mockMostRecent({
+        body: {
+          name: 'wassy',
+        },
+      });
+      return prms;
     });
 
-    it('#post', (done) => {
+    it('#post', () => {
       client = new HttpClient({
         url: 'http://nowhere.com/users',
       });
-      client
-        .post({
-          name: 'Kante',
-        })
+      const prms = client.post({ name: 'Kante' })
         .then(({ model }) => {
           log(model);
           assert.equal(model.id, 434343);
-          done();
         })
         .catch((err) => {
           log(err);
         });
+      mockMostRecent({
+        body: {
+          id: 434343,
+        },
+      });
+      return prms;
     });
   });
 
   describe('Overriding', () => {
-    it('Override headers', (done) => {
+    it('Override headers', () => {
       client = new HttpClient({
         url: 'http://nowhere.com/fruits',
         headers: {
           Accept: 'text/html',
         },
       });
-      client
+      const prms = client
         .get(null, {
           Accept: 'text/json',
         })
@@ -97,10 +79,14 @@ describe(__filename, () => {
           assert.ok(_.includes(model, 'banana'));
           assert.ok(_.includes(model, 'apple'));
           assert.ok(_.includes(model, 'orange'));
-          done();
         });
+
+      mockMostRecent({
+        body: ['banana', 'apple', 'orange'],
+      });
+      return prms;
     });
-    it('Override preRequest', (done) => {
+    it('Override preRequest', () => {
       let preRequstCalled = false;
       client = new HttpClient({
         url: 'http://nowhere.com/fruits',
@@ -112,7 +98,7 @@ describe(__filename, () => {
           preRequstCalled = true;
         },
       });
-      client
+      const prms = client
         .get()
         .then(({ model }) => {
           log(model);
@@ -121,8 +107,11 @@ describe(__filename, () => {
           assert.ok(_.includes(model, 'banana'));
           assert.ok(_.includes(model, 'apple'));
           assert.ok(_.includes(model, 'orange'));
-          done();
         });
+      mockMostRecent({
+        body: ['banana', 'apple', 'orange'],
+      });
+      return prms;
     });
     it('Override postRequest', (done) => {
       client = new HttpClient({
@@ -135,6 +124,7 @@ describe(__filename, () => {
         },
       });
       client.get();
+      mockMostRecent({ status: 501 });
     });
   });
 });

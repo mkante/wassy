@@ -1,43 +1,27 @@
-module.exports = function fn(config) {
+// Karma configuration
+// Generated on Sun Dec 10 2017 07:31:32 GMT+0000 (UTC)
+
+module.exports = function (config) {
   config.set({
-    frameworks: ['mocha', 'sinon-chai', 'browserify'],
-    browsers: ['PhantomJS_1'],
+    frameworks: ['browserify','jasmine-ajax', 'jasmine'],
+    browsers: ['PhantomJS'],
+
+    // list of files / patterns to load in the browser
     files: [
       'src/**/*.js',
-      'test/e2e/**/*.js',
+      'test/unit/**/*.js',
     ],
     preprocessors: {
       'src/**/*.js': ['browserify'],
-      'test/e2e/**/*.spec.js': ['browserify'],
-    },
-    babelPreprocessor: {
-      options: {
-        presets: ['es2015'],
-      },
+      'test/unit/**/*.spec.js': ['browserify'],
     },
     browserify: {
       debug: true,
-      transform: [
-        [
-          'babelify',
-          {
-            presets: 'es2015',
-          },
-        ],
-      ],
+      transform: ['babelify'],
+      plugin: ['proxyquire-universal'],
     },
+    logLevel: config.LOG_INFO,
+    autoWatch: false,
     singleRun: true,
-    customLaunchers: {
-      PhantomJS_1: {
-        base: 'PhantomJS',
-        options: {
-          settings: {
-            webSecurityEnabled: false,
-            ignoreSslErrors: true,
-          },
-        },
-        debug: true,
-      },
-    },
   });
 };
