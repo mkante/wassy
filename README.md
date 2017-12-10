@@ -12,14 +12,13 @@ A smart REST data access library for Javascript.
 First you need to map your URL (end point) to a Model
 
 ```
-var Wassy = require('wassy');
-var User = Wassy.Model.extends({
-      config: {
-        url: '/users',
+var Endpoint = require('wassy').Endpoint;
+var User = Endpoint({
+        host: 'https://api.domain.com',
+        uri: '/users',
         headers: {
-          Accept: 'text/json',
+            Accept: 'text/json',
         }
-      }
     });
 
 ```
@@ -27,58 +26,52 @@ var User = Wassy.Model.extends({
 Making a POST / GET / GET / DELETE couldn't be easier
 
 ```
-var promise  = User.request().post() ;
+var promise  = new User().post() ;
 
 // With parameters
-var promise  = User.request().post({ name: 'wassy' }) ;
+var promise  = new User().post({ name: 'wassy' }) ;
 
 ```
 To send custom HTTP method
 
 ```
 ...
-var promise  = User.request().send('PING') ;
+var promise  = new User().send('PING') ;
 ...
 
 // Send with parameters
 var promise  = 
-	User.request()
-		.send('PING', {
-			email: 'some@nowhere.com'
-		}) ;
+    new User()
+        .send('PING', {
+            email: 'some@nowhere.com'
+        }) ;
 
 ```
 #####Response
 
-Under the hood Wassy request builder uses JQuery Ajax `$.ajax({ ... }) ` so each request is returning a Promise. 
-
 ```
 ...
-var promise = User.request().post() ;
+var promise = new User().post() ;
 
-promise.done(function( myModel ) {
-		alert( "success" );
+promise.then(function( response ) {
+        console.log( "success" );
 	})
-	.fail(function(response) {
-    	alert( "error" );
+	.catch(function(err) {
+    	console.log( "error" );
 	})
-	.always(function(myModel) {
-		alert( "complete" );
+	.finaly(function() {
+		console.log( "complete" );
 	});
 ```
-Promise callbacks —` .done(), .fail(), .always(), and .then() `— are invoked, in the order they are registered.
 
-In a successful response the first argument passed to your callback is an instance of the Model and the second is raw response
 
 Example:
 
 ```
 ...
-var promise = User.request().post() ;
-promise.done(function( myModel ) {
-		
-		// myModel is an instance to User model
-		alert( myModel.get('id') )
+var promise = new User().post() ;
+promise.then(function( response ) {
+		console.log( response.model.get('id') )
 	})
 	
 ```
@@ -90,14 +83,13 @@ Sometimes you need to have dynamic parameters inside URL. For example
 
 ```
 ...
-var Comment = Wassy.Model.extends({
-      config: {
-        url: '/users/{userId}/comments/{comId}',
-      }
+var Comment = Endpoint({
+        host: 'https://api.domain.com',
+        uri: '/users/{userId}/comments/{comId}',
     });
     
 var promise = 
-	Comment.request({ userId: 43, comId: 100 }).get() ;
+	new Comment({ userId: 43, comId: 100 }).get() ;
 
 ```
 Binding parameters are not always numbers they can be string.
@@ -106,7 +98,7 @@ Binding parameters are not always numbers they can be string.
 ```
 ...
 var promise = 
-	User.request({ state: 'active' }).get() ;
+	new User({ state: 'active' }).get() ;
 
 ```
 
@@ -117,13 +109,11 @@ You can define the default headers during the Model declaration.
 
 ```
 ...
-var User = Wassy.Model.extends({
-      config: {
-        url: '/users',
+var User = Endpoint({
+        uri: '/users',
         headers: {
-          Accept: 'text/json',
+            Accept: 'text/json',
         }
-      }
     });
 
 ```
@@ -131,8 +121,8 @@ You will define or override default headers during request
 
 ```
 var promise = 
-	User.request()
-		.get(
+	new User()
+        .get(
 			{ id: 12}, 
 			{ 'Access Token': 'tk_ewew494834384939sasa' }
 		);
@@ -141,10 +131,10 @@ var promise =
 
 ###Config options
 
-######baseUrl (default: '' )
+######host (default: 'http://localhost' )
 > Type: String
 
-######url (default: '/' )
+######uri (default: '/' )
 > Type: String
 
 ######cache (default: true )
@@ -153,14 +143,12 @@ var promise =
 ######headers (default: {} )
 > Type: Object
 
-######statusCode (default: {} )
+###### postRequest (default: {} )
 > Type: Object
 
-######testing (default: false )
-> Type: Boolean
-
-######onBeforeRequest (default: null )
+###### preRequest (default: null )
 > Type: Function
+
 
 TODO
 -
@@ -168,9 +156,8 @@ TODO
 Document the following features:
 
 - Model custom attributes and method
-- Model inheretance and configuration overriding- 
+- Endpoint inheritance and configuration overriding
 - Before request hook
-- Global config options
 - Response status code handling
 
 

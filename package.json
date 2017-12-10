@@ -5,9 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint --ext .js src test",
-    "test:unit": "mocha --require babel-core/register --recursive test/unit",
-    "test:karma": "karma start",
-    "test": "npm run lint && npm run test:unit && npm run test:karma ",
+    "test": "mocha --require babel-core/register --recursive test/unit",
     "build": "npm run test && babel src -d lib"
   },
   "keywords": [
