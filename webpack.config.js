@@ -7,7 +7,9 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'lib'),
     filename: 'wassy.js',
-    libraryTarget:'amd',
+    // libraryTarget:'commonjs2',
+    libraryTarget: 'umd',
+    library: 'wassy',
   },
   module: {
     loaders: [

@@ -363,4 +363,36 @@ describe(__filename, () => {
     });
     return prms;
   });
+  describe('Non JSON responses', () => {
+    it('Empty response', () => {
+      jasmine.Ajax
+        .stubRequest('https://api.nowayout.com/shopping_carts')
+        .andReturn({
+          status: 200,
+          contentType: 'text/plain',
+          responseText: '',
+        });
+      const A = Endpoint({
+        host: 'https://api.nowayout.com',
+        uri: '/shopping_carts',
+        headers: {
+          Accept: 'text/json',
+        },
+      });
+      const prms = new A().delete()
+        .then(({
+          model,
+          data,
+          status,
+          headers,
+        }) => {
+          log('Headders: ', headers);
+          assert.equal(model, null);
+          assert.equal(status, 200);
+          assert.equal(data, null);
+          assert.equal(headers['Content-Type'], 'text/plain');
+        });
+      return prms;
+    });
+  });
 });

@@ -3,7 +3,26 @@ import _ from 'lodash';
 import $ from 'jquery';
 import Model from './model';
 
+function normalizeHeaders(headersAsText) {
+  if (!headersAsText) {
+    return null;
+  }
+  const headers = {};
+  const lines = headersAsText.split('\n');
+  _.each(lines, (item) => {
+    const [key, val] = item.split(':');
+    if (!key) {
+      return;
+    }
+    headers[key.trim()] = (val) ? val.trim() : val;
+  });
+  return headers;
+}
+
 function toReponseItemModel(responseData, modelProperties) {
+  if (typeof responseData === 'string') {
+    return responseData;
+  }
   if (typeof responseData !== 'object') {
     return responseData;
   }
@@ -20,13 +39,25 @@ function handlePostRequest(err, response, postHandlers) {
   postHandlers[code](err, response);
 }
 
+/**
+ * THIS WILL FIX https://github.com/django-tastypie/django-tastypie/issues/886
+ */
+$.ajaxSetup({
+  dataFilter: (data, type) => {
+    if (type === 'json' && data === '') {
+      data = null;
+    }
+    return data;
+  },
+});
+
 module.exports = (opts, modelDefinition) => {
   const promise = $.Deferred();
 
   function makeResponseObject(param) {
     return {
       status: param.status,
-      headers: param.getAllResponseHeaders(),
+      headers: normalizeHeaders(param.getAllResponseHeaders()),
       body: param.responseText,
       data: param.responseJSON,
       request: {
@@ -44,7 +75,6 @@ module.exports = (opts, modelDefinition) => {
     dataType: 'json',
     headers: opts.headers,
     data: opts.body,
-    json: true,
   })
     .done((data, textStatus, jqXHR) => {
       const response = makeResponseObject(jqXHR);

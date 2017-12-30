@@ -3,7 +3,7 @@ module.exports = {
 
   mockMostRecent: (obj = {}) => {
     let { body } = obj;
-    body = body || {};
+    body = (body === undefined) ? {} : body;
     const request = jasmine.Ajax.requests.mostRecent();
     request.respondWith({
       status: obj.status || 200,
