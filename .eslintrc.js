@@ -7,6 +7,7 @@ module.exports = {
     'no-underscore-dangle': 0,
     'prefer-template': 0,
     'consistent-return': 0,
+    'class-methods-use-this': 0,
   },
   env: {
     node: true,

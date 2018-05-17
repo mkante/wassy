@@ -4,7 +4,8 @@ import HttpClient from './httpclient';
 module.exports = function fn(options = {}) {
   options.host = options.host || 'http://localhost';
   options.uri = options.uri || '/';
-  function resolveUrl(urlBindings) {
+
+  const resolveUrl = (urlBindings) => {
     const { host, uri } = options;
     const base = (!host) ? '' : host;
     let url = base + uri;
@@ -15,7 +16,7 @@ module.exports = function fn(options = {}) {
     });
 
     return url;
-  }
+  };
 
   return class Endpoint extends HttpClient {
     constructor(urlBindings) {

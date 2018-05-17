@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import request from './request-adaptor';
+import { request } from './request-adaptor';
 
 class HttpClient {
   constructor({

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-class Model {
+module.exports = class {
   constructor(params = {}) {
     const funcs = ['get', 'set', 'toString'];
     _.remove(funcs, (n) => {
@@ -18,6 +18,4 @@ class Model {
   toString() {
     return JSON.stringify(this);
   }
-}
-
-module.exports = Model;
+};

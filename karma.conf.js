@@ -3,7 +3,7 @@
 
 module.exports = function (config) {
   config.set({
-    frameworks: ['browserify','jasmine-ajax', 'jasmine'],
+    frameworks: ['browserify', 'jasmine-ajax', 'jasmine'],
     browsers: ['PhantomJS'],
 
     // list of files / patterns to load in the browser

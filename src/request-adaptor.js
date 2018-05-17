@@ -1,9 +1,13 @@
-/* eslint global-require: "off" */
 import _ from 'lodash';
 import $ from 'jquery';
 import Model from './model';
 
-function normalizeHeaders(headersAsText) {
+/**
+ * Normalize Http headers
+ * @param headersAsText
+ * @returns {null}
+ */
+const normalizeHeaders = (headersAsText) => {
   if (!headersAsText) {
     return null;
   }
@@ -17,9 +21,15 @@ function normalizeHeaders(headersAsText) {
     headers[key.trim()] = (val) ? val.trim() : val;
   });
   return headers;
-}
+};
 
-function toReponseItemModel(responseData, modelProperties) {
+/**
+ * Transform response to Model instance
+ * @param responseData
+ * @param modelProperties
+ * @returns {*}
+ */
+const createModel = (responseData, modelProperties) => {
   if (typeof responseData === 'string') {
     return responseData;
   }
@@ -29,15 +39,21 @@ function toReponseItemModel(responseData, modelProperties) {
   const item = {};
   _.merge(item, modelProperties, responseData);
   return new Model(item);
-}
+};
 
-function handlePostRequest(err, response, postHandlers) {
+/**
+ * Call Http status handlers
+ * @param err
+ * @param response
+ * @param postHandlers
+ */
+const handlePostRequest = (err, response, postHandlers) => {
   const code = _.get(response, 'status');
   if (!_.has(postHandlers, code)) {
     return;
   }
   postHandlers[code](err, response);
-}
+};
 
 /**
  * THIS WILL FIX https://github.com/django-tastypie/django-tastypie/issues/886
@@ -51,7 +67,7 @@ $.ajaxSetup({
   },
 });
 
-module.exports = (opts, modelDefinition) => {
+const request = (opts, modelDefinition) => {
   const promise = $.Deferred();
 
   function makeResponseObject(param) {
@@ -84,11 +100,11 @@ module.exports = (opts, modelDefinition) => {
         model = [];
 
         _.each(data, (obj) => {
-          const respItem = toReponseItemModel(obj, modelDefinition);
+          const respItem = createModel(obj, modelDefinition);
           model.push(respItem);
         });
       } else if (_.isObjectLike(data)) {
-        model = toReponseItemModel(data, modelDefinition);
+        model = createModel(data, modelDefinition);
       } else {
         model = data;
       }
@@ -102,4 +118,10 @@ module.exports = (opts, modelDefinition) => {
       promise.reject(err);
     });
   return promise;
+};
+
+export {
+  normalizeHeaders,
+  createModel,
+  request,
 };
