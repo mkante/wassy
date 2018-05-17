@@ -55,8 +55,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {
-    "browser-request": "^0.3.3",
-    "jest": "^22.4.3",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4"
   },
