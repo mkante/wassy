@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import Endpoint from '../../src/endpoint';
+import { define as EndpointDefine } from '../../src/endpoint';
 import { mockMostRecent } from '../util';
 
 const { log } = console;
@@ -16,7 +16,7 @@ describe(__filename, () => {
 
   it('test Model different instances', () => {
     const U1 = 'https://api.domain.com';
-    const EndA = Endpoint({
+    const EndA = EndpointDefine({
       host: 'https://api.domain.com',
       uri: '/shopping_carts',
       headers: {
@@ -42,7 +42,7 @@ describe(__filename, () => {
   });
 
   it('test Model inheretance', () => {
-    const EndA = Endpoint({
+    const EndA = EndpointDefine({
       host: 'http://api.somewhere.com',
       uri: '/checkout',
       headers: {
@@ -61,7 +61,7 @@ describe(__filename, () => {
   });
 
   it('test Model properties inheretance', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       model: {
         name: 'wassy',
         age: 24,
@@ -102,7 +102,7 @@ describe(__filename, () => {
   });
 
   it('test Model getter', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       uri: '/account',
     });
     const a = new A();
@@ -122,7 +122,7 @@ describe(__filename, () => {
   });
 
   it('test Model methods inheretance', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       uri: '/users/{id}',
       model: {
         name: null,
@@ -149,7 +149,7 @@ describe(__filename, () => {
   });
 
   describe('Test on before request', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       host: 'http://kante.net',
       uri: '/organisations',
       preRequest: (opts) => {
@@ -302,7 +302,7 @@ describe(__filename, () => {
   */
 
   it('Prevent method overriding', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       host: 'http://kante.net',
       uri: '/organisations',
       model: {
@@ -325,7 +325,7 @@ describe(__filename, () => {
   });
 
   it('Getter', () => {
-    const A = Endpoint({
+    const A = EndpointDefine({
       host: 'http://wassy.net',
       uri: '/friends',
       model: {
@@ -372,7 +372,7 @@ describe(__filename, () => {
           contentType: 'text/plain',
           responseText: '',
         });
-      const A = Endpoint({
+      const A = EndpointDefine({
         host: 'https://api.nowayout.com',
         uri: '/shopping_carts',
         headers: {

@@ -75,7 +75,7 @@ const request = (opts, modelDefinition) => {
       status: param.status,
       headers: normalizeHeaders(param.getAllResponseHeaders()),
       body: param.responseText,
-      data: param.responseJSON,
+      // data: param.responseJSON,
       request: {
         method: opts.method,
         data: opts.body,
@@ -90,6 +90,7 @@ const request = (opts, modelDefinition) => {
     crossDomain: true,
     dataType: 'json',
     headers: opts.headers,
+    qs: opts.queryParams,
     data: opts.body,
   })
     .done((data, textStatus, jqXHR) => {
