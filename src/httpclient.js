@@ -22,6 +22,12 @@ class HttpClient {
     return this.send('POST', params, headers);
   }
 
+  postJSON(params, headers) {
+    headers = headers || {};
+    headers['Content-Type'] = 'application/json';
+    return this.post(JSON.stringify(params), headers);
+  }
+
   get(params, headers) {
     return this.send('GET', params, headers);
   }
@@ -32,6 +38,12 @@ class HttpClient {
 
   put(params, headers) {
     return this.send('PUT', params, headers);
+  }
+
+  putJSON(params, headers) {
+    headers = headers || {};
+    headers['Content-Type'] = 'application/json';
+    return this.put(JSON.stringify(params), headers);
   }
 
   head(params, headers) {

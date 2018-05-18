@@ -113,10 +113,10 @@ const request = (opts, modelDefinition) => {
       response.model = model;
       promise.resolve(response);
     })
-    .fail((jqXHR, textStatus, err) => {
+    .fail((jqXHR) => {
       const response = makeResponseObject(jqXHR);
-      handlePostRequest(err, response, opts.postRequest);
-      promise.reject(err);
+      handlePostRequest(jqXHR, response, opts.postRequest);
+      promise.reject(jqXHR);
     });
   return promise;
 };

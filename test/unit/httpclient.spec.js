@@ -59,6 +59,43 @@ describe(__filename, () => {
       });
       return prms;
     });
+
+    it('#postJSON', () => {
+      client = new HttpClient({
+        url: 'http://nowhere.com/fruits',
+        preRequest: (ops) => {
+          // Verify the Content-Type is define
+          assert.equal(ops.headers['Content-Type'], 'application/json');
+        },
+      });
+      const prms = client.postJSON({ name: 'apple' })
+        .then(({ model }) => {
+          log(model);
+          assert.equal(model.id, 99999);
+        })
+        .catch((err) => {
+          log(err);
+        });
+      mockMostRecent({
+        body: {
+          id: 99999,
+        },
+      });
+      return prms;
+    });
+
+    it('#putJSON', () => {
+      client = new HttpClient({
+        url: 'http://nowhere.com/drinks',
+        preRequest: (ops) => {
+          // Verify the Content-Type is define
+          assert.equal(ops.headers['Content-Type'], 'application/json');
+        },
+      });
+      const prms = client.putJSON({ name: 'Bear' });
+      mockMostRecent();
+      return prms;
+    });
   });
 
   describe('Overriding', () => {
