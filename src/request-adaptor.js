@@ -47,12 +47,12 @@ const createModel = (responseData, modelProperties) => {
  * @param response
  * @param postHandlers
  */
-const handlePostRequest = (err, response, postHandlers) => {
+const handlePostRequest = (err, response, jqXHR, postHandlers) => {
   const code = _.get(response, 'status');
   if (!_.has(postHandlers, code)) {
     return;
   }
-  postHandlers[code](err, response);
+  postHandlers[code](err, response, jqXHR);
 };
 
 /**
@@ -75,7 +75,7 @@ const request = (opts, modelDefinition) => {
       status: param.status,
       headers: normalizeHeaders(param.getAllResponseHeaders()),
       body: param.responseText,
-      // data: param.responseJSON,
+      bodyJSON: param.responseJSON,
       request: {
         method: opts.method,
         data: opts.body,
@@ -95,7 +95,7 @@ const request = (opts, modelDefinition) => {
   })
     .done((data, textStatus, jqXHR) => {
       const response = makeResponseObject(jqXHR);
-      handlePostRequest(null, response, opts.postRequest);
+      handlePostRequest(null, response, jqXHR, opts.postRequest);
       let model = null;
       if (_.isArray(data)) {
         model = [];
@@ -113,9 +113,9 @@ const request = (opts, modelDefinition) => {
       response.model = model;
       promise.resolve(response);
     })
-    .fail((jqXHR) => {
+    .fail((jqXHR, textStatus, err) => {
       const response = makeResponseObject(jqXHR);
-      handlePostRequest(jqXHR, response, opts.postRequest);
+      handlePostRequest(err, response, jqXHR, opts.postRequest);
       promise.reject(jqXHR);
     });
   return promise;
