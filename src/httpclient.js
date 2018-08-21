@@ -50,6 +50,10 @@ class HttpClient {
     return this.send('HEAD', params, headers);
   }
 
+  removePostRequests() {
+    this.postRequest = {};
+  }
+
   send(method, params, headers) {
     const httpHeaders = {};
     _.merge(httpHeaders, this.headers, headers);
