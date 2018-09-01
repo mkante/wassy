@@ -1,6 +1,7 @@
 var path = require('path');
 
 module.exports = {
+  mode: 'production',
   entry: {
     app: './src/index.js'
   },
@@ -12,13 +13,14 @@ module.exports = {
     library: 'wassy',
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['es2015']
-        },
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+        ],
       },
     ],
   },
