@@ -1,24 +1,14 @@
 import { assert } from 'chai';
 import { define as EndpointDefine } from '../../src/endpoint';
-import { mockMostRecent } from '../util';
+import {} from '../boot';
 
 const { log } = console;
 
 describe(__filename, () => {
-  beforeEach(() => {
-    jasmine.Ajax.install();
-  });
-
-  afterEach(() => {
-    jasmine.Ajax.uninstall();
-  });
-
-
   describe('Options: Model', () => {
-    it('test Model different instances', () => {
-      const U1 = 'https://api.domain.com';
+    test('test Model different instances', () => {
       const EndA = EndpointDefine({
-        host: 'https://api.domain.com',
+        host: `${API_HOST}`,
         uri: '/shopping_carts',
         headers: {
           Accept: 'text/json',
@@ -35,14 +25,14 @@ describe(__filename, () => {
       const b = new EndB({ id: 20 });
 
       log(a); log(b);
-      assert.equal(a.url, `${U1}/shopping_carts`);
+      assert.equal(a.url, `${API_HOST}/shopping_carts`);
       assert.equal(a.headers.Accept, 'text/json');
 
-      assert.equal(b.url, `${U1}/account/20`);
+      assert.equal(b.url, `${API_HOST}/account/20`);
       assert.equal(b.headers.Accept, 'text/html');
     });
 
-    it('test Model inheretance', () => {
+    test('test Model inheretance', () => {
       const EndA = EndpointDefine({
         host: 'http://api.somewhere.com',
         uri: '/checkout',
@@ -61,7 +51,7 @@ describe(__filename, () => {
       assert.equal(b.headers.Token, 'apple_fruit');
     });
 
-    it('test Model properties inheretance', () => {
+    test('test Model properties inheretance', () => {
       const A = EndpointDefine({
         model: {
           name: 'wassy',
@@ -102,32 +92,27 @@ describe(__filename, () => {
       assert.equal(c.model.age, 24);
     });
 
-    it('test Model getter', () => {
+    test('test Model getter', async () => {
       const A = EndpointDefine({
-        uri: '/account',
+        host: API_HOST,
+        uri: '/users/500',
       });
       const a = new A();
       log(a);
-      const prms = a.get().then(({ model }) => {
-        assert.equal(model.name, 'wassy');
-        assert.equal(model.get('name'), 'wassy');
-
-        // default
-        assert.equal(model.get('likes', '2k'), '2k');
-      });
-      mockMostRecent({
-        body: { name: 'wassy' },
-      });
-
-      return prms;
+      const { model } = await a.get();
+      assert.equal(model.name, 'wassy');
+      assert.equal(model.get('name'), 'wassy');
+      // default
+      assert.equal(model.get('likes', '2k'), '2k');
     });
 
-    it('test Model methods inheretance', () => {
+    test('test Model methods inheretance', async () => {
       const A = EndpointDefine({
+        host: API_HOST,
         uri: '/users/{id}',
         model: {
           name: null,
-          age: null,
+          id: null,
           greeting() {
             return 'hello-ha';
           },
@@ -137,22 +122,17 @@ describe(__filename, () => {
         },
       });
 
-      const a = new A({ id: 200 });
-      const prms = a.get().then(({ model }) => {
-        assert.equal(model.greeting(), 'hello-ha');
-        assert.equal(model.yourName(), 'wassy');
-        assert.equal(model.get('age'), 40);
-      });
-      mockMostRecent({
-        body: { name: 'wassy', age: 40 },
-      });
-      return prms;
+      const a = new A({ id: 500 });
+      const { model } = await a.get();
+      assert.equal(model.greeting(), 'hello-ha');
+      assert.equal(model.yourName(), 'wassy');
+      assert.equal(model.get('id'), 500);
     });
 
-    it('Prevent Models method overriding', () => {
+    test('Prevent Models method overriding', async () => {
       const A = EndpointDefine({
-        host: 'http://kante.net',
-        uri: '/organisations',
+        host: API_HOST,
+        uri: '/users/500',
         model: {
           age: 21,
           getName() { return 'wassy'; },
@@ -164,17 +144,14 @@ describe(__filename, () => {
         getName: 'hahah',
       }))();
 
-      const prms = a1.get().then(({ model }) => {
-        assert.equal(model.age, 21);
-        assert.equal(model.getName(), 'wassy');
-      });
-      mockMostRecent();
-      return prms;
+      const { model } = await a1.get();
+      assert.equal(model.age, 21);
+      assert.equal(model.getName(), 'wassy');
     });
 
-    it('Getter', () => {
+    test('Getter', async () => {
       const A = EndpointDefine({
-        host: 'http://wassy.net',
+        host: API_HOST,
         uri: '/friends',
         model: {
           name: 'wassy',
@@ -184,73 +161,42 @@ describe(__filename, () => {
       });
 
       const a = new A();
-      const prms = a.get().then(({ model }) => {
-        assert.equal(model.get('name'), 'wassy');
-        assert.equal(model.get('firstname'), null);
-        assert.equal(model.get('lastname', 'wassy'), 'wassy');
-        assert.equal(model.get('products[0].name'), 'product_1');
-        assert.equal(model.get('products[0].id'), 1);
-        assert.equal(model.get('products[0].color', 'red'), 'red');
-        assert.equal(model.get('products[1].id'), 2);
-        assert.equal(model.get('products[1].name'), 'product_2');
-        assert.equal(model.get('products[1].sku.number'), null);
-      });
-      mockMostRecent({
-        body: {
-          products: [
-            {
-              id: 1,
-              name: 'product_1',
-            },
-            {
-              id: 2,
-              name: 'product_2',
-            },
-          ],
-        },
-      });
-      return prms;
+      const { model } = await a.get();
+
+      assert.equal(model.get('name'), 'wassy');
+      assert.equal(model.get('firstname'), null);
+      assert.equal(model.get('lastname', 'wassy'), 'wassy');
+      assert.equal(model.get('products[0].name'), 'product_1');
+      assert.equal(model.get('products[0].id'), 1);
+      assert.equal(model.get('products[0].color', 'red'), 'red');
+      assert.equal(model.get('products[1].id'), 2);
+      assert.equal(model.get('products[1].name'), 'product_2');
+      assert.equal(model.get('products[1].sku.number'), null);
     });
 
     //
     describe('Non JSON responses', () => {
-      it('Empty response', () => {
-        jasmine.Ajax
-          .stubRequest('https://api.nowayout.com/shopping_carts')
-          .andReturn({
-            status: 200,
-            contentType: 'text/plain',
-            responseText: '',
-          });
+      test('Empty response', async () => {
         const A = EndpointDefine({
-          host: 'https://api.nowayout.com',
+          host: API_HOST,
           uri: '/shopping_carts',
           headers: {
             Accept: 'text/json',
           },
         });
-        const prms = new A().delete()
-          .then(({
-            model,
-            data,
-            status,
-            headers,
-          }) => {
-            log('Headders: ', headers);
-            assert.equal(model, null);
-            assert.equal(status, 200);
-            assert.equal(data, null);
-            assert.equal(headers['Content-Type'], 'text/plain');
-          });
-        return prms;
+        try {
+          await (new A()).delete();
+        } catch (e) {
+          assert.equal(e.statusText, 'Not Found');
+        }
       });
     });
   });
 
   describe('Option: preRequest', () => {
     const A = EndpointDefine({
-      host: 'http://kante.net',
-      uri: '/organisations',
+      host: API_HOST,
+      uri: '/users',
       preRequest: (opts) => {
         opts.headers.token = 'abcdef';
       },
@@ -280,71 +226,69 @@ describe(__filename, () => {
 
     // log(d1);
     // log(d2);
-    it('#d1', () => {
+    test('#d1', async () => {
       const b = new B();
-      const prms = b.post({ userId: 123 })
-        .then(({ model, request }) => {
-          assert.equal(request.method, 'POST');
-          assert.equal(model.userId, 123);
-          assert.equal(request.headers.token, 'abcdef');
-        });
-      mockMostRecent({
-        status: 200,
-        body: { userId: 123, age: 40 },
-      });
-      return prms;
+      const { model, request } = await b.post({ userId: 123 });
+      assert.equal(request.method, 'POST');
+      assert.equal(model.userId, 123);
+      assert.equal(request.headers.token, 'abcdef');
     });
 
-    it('#d2', () => {
+    test('#d2', async () => {
       const a = new A();
-      const prms = a.get()
-        .then(({ request }) => {
-          assert.equal(request.method, 'GET');
-          assert.equal(request.headers.token, 'abcdef');
-        });
-      mockMostRecent();
-      return prms;
+      const { request } = await a.get();
+      assert.equal(request.method, 'GET');
+      assert.equal(request.headers.token, 'abcdef');
     });
 
-    it('#d3', () => {
+    test('#d3', async () => {
       const c = new C();
-      const prms = c.put().then(({ request }) => {
-        assert.equal(request.method, 'PUT');
-        assert.equal(request.headers.typeD, undefined);
-        assert.equal(request.headers.typeC, true);
-        assert.equal(request.headers.token, '911');
+      const { request } = await c.put();
+      assert.equal(request.method, 'PUT');
+      assert.equal(request.headers.typeD, undefined);
+      assert.equal(request.headers.typeC, true);
+      assert.equal(request.headers.token, '911');
+    });
+
+    test('#d4', async () => {
+      const d = new D({
+        postRequest: {
+          404: (err, { request }) => {
+            assert.equal(request.method, 'DELETE');
+            assert.equal(request.headers.token, undefined);
+            assert.equal(request.headers.typeD, true);
+            assert.equal(request.headers.typeC, true);
+          },
+        },
       });
-      mockMostRecent();
-      return prms;
+
+      try {
+        await d.delete();
+      } catch (e) {
+        //
+      }
     });
 
-    it('#d4', () => {
-      const d = new D();
-      const prms = d.delete()
-        .then(({ request }) => {
-          assert.equal(request.method, 'DELETE');
-          assert.equal(request.headers.token, undefined);
-          assert.equal(request.headers.typeD, true);
-          assert.equal(request.headers.typeC, true);
-        });
-      mockMostRecent();
-      return prms;
-    });
+    test('#d5', async () => {
+      const e = new E({
+        postRequest: {
+          404: (err, { request }) => {
+            assert.equal(request.headers.typeC, true);
+            assert.equal(request.headers.status, 400);
+          },
+        },
+      });
 
-    it('#d5', () => {
-      const e = new E();
-      const prms = e.delete()
-        .then(({ request }) => {
-          assert.equal(request.headers.typeC, true);
-          assert.equal(request.headers.status, 400);
-        });
-      mockMostRecent();
-      return prms;
+      try {
+        await e.delete();
+      } catch (err) {
+        //
+      }
     });
   });
 
   /*
-  it('Test method inheritance', () => {
+  test('Test method inheritance', () => {
     const ModelA = Model.extends({
       model: {
         greetin() { return 'A'; },

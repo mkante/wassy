@@ -1,5 +1,8 @@
 module.exports = {
   extends: 'airbnb-base',
+  globals: {
+    API_HOST: true,
+  },
   rules: {
     'arrow-body-style': ["error", "always"],
     'no-param-reassign': 0,

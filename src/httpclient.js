@@ -1,6 +1,20 @@
 import _ from 'lodash';
 import { request } from './request-adaptor';
 
+const Method = {
+  POST: 'POST',
+  GET: 'GET',
+  PUT: 'PUT',
+  DELETE: 'DELETE',
+  OPTIONS: 'OPTION',
+  HEAD: 'HEAD',
+};
+
+const ContentType = {
+  JSON: 'application/json',
+  X_WWW_FORM: 'application/x-www-form-urlencoded',
+};
+
 class HttpClient {
   constructor({
     url = 'http://localhost',
@@ -19,57 +33,66 @@ class HttpClient {
   }
 
   post(params, headers) {
-    return this.send('POST', params, headers);
+    return this.send(Method.POST, params, headers);
   }
 
-  postJSON(params, headers) {
-    headers = headers || {};
-    headers['Content-Type'] = 'application/json';
-    return this.post(JSON.stringify(params), headers);
+  postJSON(params, headers = {}) {
+    headers['Content-Type'] = ContentType.JSON;
+    return this.post(params, headers);
   }
 
   get(params, headers) {
-    return this.send('GET', params, headers);
+    return this.send(Method.GET, params, headers);
+  }
+
+  getText(params, headers) {
+    return this.send(Method.GET, params, headers, { expectJSON: false });
   }
 
   delete(params, headers) {
-    return this.send('DELETE', params, headers);
+    return this.send(Method.DELETE, params, headers);
   }
 
   put(params, headers) {
-    return this.send('PUT', params, headers);
+    return this.send(Method.PUT, params, headers);
   }
 
-  putJSON(params, headers) {
-    headers = headers || {};
-    headers['Content-Type'] = 'application/json';
-    return this.put(JSON.stringify(params), headers);
+  putJSON(params, headers = {}) {
+    headers['Content-Type'] = ContentType.JSON;
+    return this.put(params, headers);
   }
 
   head(params, headers) {
-    return this.send('HEAD', params, headers);
+    return this.send(Method.HEAD, params, headers);
   }
 
   removePostRequests() {
     this.postRequest = {};
   }
 
-  send(method, params, headers) {
+  send(method, params, headers = {}, options = {}) {
     const httpHeaders = {};
     _.merge(httpHeaders, this.headers, headers);
+    const { expectJSON } = options;
 
-    const options = {
+    const argObject = {
       url: this.url,
       method,
       headers: httpHeaders,
       body: params,
+      expectJSON,
     };
     if (_.isFunction(this.preRequest)) {
-      this.preRequest(options);
+      this.preRequest(argObject);
     }
-    options.postRequest = this.postRequest;
-    return request.call(this, options, this.model);
+    argObject.postRequest = this.postRequest;
+
+    if (_.get(argObject, 'headers["Content-Type"]') === ContentType.JSON) {
+      argObject.body = JSON.stringify(argObject.body);
+    }
+
+    return request.call(this, argObject, this.model);
   }
 }
 
-module.exports = HttpClient;
+export { HttpClient, Method };

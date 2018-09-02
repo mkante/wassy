@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import HttpClient from './httpclient';
+import { HttpClient } from './httpclient';
 
 const resolveUrl = (options, urlBindings) => {
   const { host, uri } = options;
@@ -14,7 +14,7 @@ const resolveUrl = (options, urlBindings) => {
   return url;
 };
 
-const define = function fn(options) {
+const define = function fn(options = {}) {
   options.host = options.host || 'http://localhost';
   options.uri = options.uri || '/';
 

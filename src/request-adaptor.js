@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import $ from 'jquery';
+import $ from './jq-ajax';
 import Model from './model';
 
 /**
@@ -68,7 +68,12 @@ $.ajaxSetup({
 });
 
 const request = (opts, modelDefinition) => {
-  const promise = $.Deferred();
+  let resolveFunc;
+  let rejectFunc;
+  const promise = new Promise((resolve, reject) => {
+    resolveFunc = resolve;
+    rejectFunc = reject;
+  });
 
   function makeResponseObject(param) {
     return {
@@ -88,7 +93,7 @@ const request = (opts, modelDefinition) => {
     method: opts.method,
     url: opts.url,
     crossDomain: true,
-    dataType: 'json',
+    dataType: opts.expectJSON ? 'json' : null,
     headers: opts.headers,
     qs: opts.queryParams,
     data: opts.body,
@@ -111,12 +116,12 @@ const request = (opts, modelDefinition) => {
       }
 
       response.model = model;
-      promise.resolve(response);
+      resolveFunc(response);
     })
     .fail((jqXHR, textStatus, err) => {
       const response = makeResponseObject(jqXHR);
       handlePostRequest(err, response, jqXHR, opts.postRequest);
-      promise.reject(jqXHR);
+      rejectFunc(jqXHR);
     });
   return promise;
 };

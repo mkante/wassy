@@ -1,132 +1,106 @@
 import { assert } from 'chai';
 import _ from 'lodash';
-import { mockMostRecent } from '../util';
-import HttpClient from '../../src/httpclient';
+import { HttpClient } from '../../src/httpclient';
+import {} from '../boot';
 
-const { log } = console;
-
+let client;
 
 describe(__filename, () => {
-  beforeEach(() => {
-    jasmine.Ajax.install();
-  });
-
-  afterEach(() => {
-    jasmine.Ajax.uninstall();
-  });
-  let client = null;
-
-  describe('#default parameters', () => {
+  test('#default parameters', () => {
     client = new HttpClient({});
     assert.equal(client.url, 'http://localhost');
   });
 
+  test('Connect error', async () => {
+    client = new HttpClient({
+      url: 'http://127.1.2.3:9000/users/1',
+    });
+    try {
+      await client.get();
+    } catch (err) {
+      assert.equal(err.status, 0);
+      assert.equal(err.statusText, 'error');
+    }
+  });
+
   describe('test HTTP Methods', () => {
-    it('#get', () => {
+    test('#get', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/users/1',
+        url: `${API_HOST}/document`,
       });
-      const prms = client.get()
-        .then(({ model }) => {
-          log(model);
-          assert.equal(model.name, 'wassy');
-        });
 
-      mockMostRecent({
-        body: {
-          name: 'wassy',
-        },
-      });
-      return prms;
+      const { body, model, status } = await client.getText();
+      expect(body).toEqual('<div>Hello</div>');
+      expect(model).toEqual(body);
+      expect(status).toEqual(202);
     });
 
-    it('#post', () => {
+    test('#post', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/users',
+        url: `${API_HOST}/users`,
       });
-      const prms = client.post({ name: 'Kante' })
-        .then(({ model }) => {
-          log(model);
-          assert.equal(model.id, 434343);
-        })
-        .catch((err) => {
-          log(err);
-        });
-      mockMostRecent({
-        body: {
-          id: 434343,
-        },
-      });
-      return prms;
+
+      const { status, model } = await client.post({ name: 'kante' });
+      assert.equal(status, 201);
+      assert.equal(model.name, 'kante');
     });
 
-    it('#postJSON', () => {
+    test('#postJSON', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/fruits',
+        url: `${API_HOST}/users`,
         preRequest: (ops) => {
           // Verify the Content-Type is define
-          assert.equal(ops.headers['Content-Type'], 'application/json');
+          expect(ops.headers['Content-Type']).toEqual('application/json');
+          ops.body.name = 'Aya';
         },
       });
-      const prms = client.postJSON({ name: 'apple' })
-        .then(({ model }) => {
-          log(model);
-          assert.equal(model.id, 99999);
-        })
-        .catch((err) => {
-          log(err);
-        });
-      mockMostRecent({
-        body: {
-          id: 99999,
-        },
-      });
-      return prms;
+      const { model } = await client.postJSON({ id: 99999 });
+      assert.equal(model.id, 99999);
+      assert.equal(model.name, 'Aya');
     });
 
-    it('#putJSON', () => {
+    test('#putJSON', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/drinks',
+        url: `${API_HOST}/users`,
         preRequest: (ops) => {
           // Verify the Content-Type is define
-          assert.equal(ops.headers['Content-Type'], 'application/json');
+          expect(ops.headers['Content-Type']).toEqual('application/json');
         },
       });
-      const prms = client.putJSON({ name: 'Bear' });
-      mockMostRecent();
-      return prms;
+      const { model } = await client.putJSON({ name: 'Bear' });
+      expect(model.name).toEqual('Bear');
+    });
+
+    test('#get', async () => {
+      client = new HttpClient({
+        url: `${API_HOST}/users`,
+      });
+      const { model } = await client.get();
+      assert.equal(model.length, 3);
+      assert.ok(_.includes(model, 'DMX'));
+      assert.ok(_.includes(model, 'HOV'));
+      assert.ok(_.includes(model, 'RAKIM'));
     });
   });
 
   describe('Overriding', () => {
-    it('Override headers', () => {
+    test('Override headers', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/fruits',
+        url: `${API_HOST}/users`,
         headers: {
           Accept: 'text/html',
         },
       });
-      const prms = client
-        .get(null, {
-          Accept: 'text/json',
-        })
-        .then(({ model }) => {
-          log(model);
-          assert.equal(model.length, 3);
-          assert.ok(_.includes(model, 'banana'));
-          assert.ok(_.includes(model, 'apple'));
-          assert.ok(_.includes(model, 'orange'));
-        });
-
-      mockMostRecent({
-        body: ['banana', 'apple', 'orange'],
+      const { request } = await client.get(null, {
+        Accept: 'text/json',
       });
-      return prms;
+      assert.equal(request.headers.Accept, 'text/json');
     });
-    it('Override preRequest', () => {
+
+    test('Override preRequest', async () => {
       let preRequstCalled = false;
       client = new HttpClient({
-        url: 'http://nowhere.com/fruits',
+        url: `${API_HOST}/users`,
         headers: {
           Accept: 'text/html',
         },
@@ -135,33 +109,27 @@ describe(__filename, () => {
           preRequstCalled = true;
         },
       });
-      const prms = client
-        .get()
-        .then(({ model }) => {
-          log(model);
-          assert.equal(model.length, 3);
-          assert.ok(preRequstCalled);
-          assert.ok(_.includes(model, 'banana'));
-          assert.ok(_.includes(model, 'apple'));
-          assert.ok(_.includes(model, 'orange'));
-        });
-      mockMostRecent({
-        body: ['banana', 'apple', 'orange'],
-      });
-      return prms;
+      const { request } = await client.get();
+      assert.equal(request.headers.Accept, 'text/json');
+      assert.ok(preRequstCalled);
     });
-    it('Override postRequest', (done) => {
+
+    test('Override postRequest', async () => {
       client = new HttpClient({
-        url: 'http://nowhere.com/users/1000',
+        url: `${API_HOST}/users/100`,
         postRequest: {
-          501: () => {
+          400: (err, resp) => {
             assert.ok(true);
-            done();
+            expect(resp.bodyJSON.id).toEqual(100);
           },
         },
       });
-      client.get();
-      mockMostRecent({ status: 501 });
+
+      try {
+        await client.get();
+      } catch (e) {
+        //
+      }
     });
   });
 });
