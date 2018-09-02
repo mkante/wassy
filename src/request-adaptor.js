@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from './lodash';
 import $ from './jq-ajax';
 import Model from './model';
 

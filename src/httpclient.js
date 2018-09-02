@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from './lodash';
 import { request } from './request-adaptor';
 
 const Method = {
