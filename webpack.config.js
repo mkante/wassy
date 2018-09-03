@@ -1,20 +1,29 @@
-
-var rootDir = __dirname+"/..";
+var path = require('path');
 
 module.exports = {
+  mode: 'production',
   entry: {
-    app: './index.js'
+    app: './src/index.js'
   },
   output: {
-    path: './lib',
-    filename: 'wassy.js',
-    libraryTarget:'amd'
+    path: path.resolve(__dirname, 'lib'),
+    filename: 'wassy.min.js',
+    // libraryTarget:'commonjs2',
+    libraryTarget: 'umd',
+    library: 'wassy',
   },
   module: {
-    loaders: [
-      //{ test: /\.js$/, exclude: /node_modules/, loader: 'val'},
-      //{ test: /\.css$/, loader: 'style-loader!css-loader' }
-    ]
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+        ],
+      },
+    ],
   },
   devtool: '#source-map'
-}
+};
+
