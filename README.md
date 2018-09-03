@@ -11,7 +11,7 @@ npm install wassy
 **CDN**
 
 ```
-https://cdn.jsdelivr.net/npm/wassy@2.0.0
+https://cdn.jsdelivr.net/npm/wassy@2.0.1
 ```
 
 

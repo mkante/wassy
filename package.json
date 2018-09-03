@@ -1,6 +1,6 @@
 {
   "name": "wassy",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "REST endpoint abstraction library",
   "main": "lib/wassy.min.js",
   "scripts": {
