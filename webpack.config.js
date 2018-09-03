@@ -7,7 +7,7 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'lib'),
-    filename: 'wassy.js',
+    filename: 'wassy.min.js',
     // libraryTarget:'commonjs2',
     libraryTarget: 'umd',
     library: 'wassy',
