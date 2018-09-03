@@ -1,8 +1,8 @@
-#Wassy
+# Wassy
 
 Wassy allows you to abstract RESTfull endpoints into POJOs.
 
-###Install
+### Install
 
 ```bash
 npm install wassy 
@@ -15,7 +15,7 @@ https://cdn.jsdelivr.net/npm/wassy@2.0.0
 ```
 
 
-###Get Started
+### Get Started
 The easier way to understand Wassy design is to image the ORM pattern but instead of mapping POJOs to database table record, you are mapping Http endpoint to a POJO. One endpoint, one POJO.
 
 The first step is to define an endpoint
