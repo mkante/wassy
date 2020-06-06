@@ -24,12 +24,15 @@ const define = function fn(options = {}) {
       this.host = options.host;
       this.uri = options.uri;
       this.urlBindings = urlBindings;
-      this.url = resolveUrl(options, this.urlBindings);
+      this.url = options.url ? options.url : resolveUrl(options, this.urlBindings);
     }
     static extends(newOptions) {
       const params = {};
       _.merge(params, options, newOptions);
       return fn(params);
+    }
+    static new(urlBindings) {
+      return new this(urlBindings);
     }
   };
 };

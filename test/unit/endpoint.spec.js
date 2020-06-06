@@ -32,7 +32,7 @@ describe(__filename, () => {
       assert.equal(b.headers.Accept, 'text/html');
     });
 
-    test('test Model inheretance', () => {
+    test('test Model inheritance', () => {
       const EndA = EndpointDefine({
         host: 'http://api.somewhere.com',
         uri: '/checkout',
@@ -287,60 +287,31 @@ describe(__filename, () => {
     });
   });
 
-  /*
-  test('Test method inheritance', () => {
-    const ModelA = Model.extends({
-      model: {
-        greetin() { return 'A'; },
-        name() { return 'wassy'; },
-      },
+  describe('Factory method #new', () => {
+    test('Instance a != b', () => {
+      const EP = EndpointDefine({
+        host: 'http://life.com',
+      });
+      const a = EP.new();
+      const b = EP.new();
+
+      assert.equal(a.host, 'http://life.com');
+      assert.equal(b.host, 'http://life.com');
+      assert.isTrue(a !== b);
+      assert.instanceOf(a, EP);
+      assert.instanceOf(b, EP);
     });
 
-    const ModelB = ModelA.extends({
-      methods: {
-        name() { return 'moh'; },
-      },
+    test('Endpoint inheritance test', () => {
+      const EP_A = EndpointDefine({ uri: '/shopping_carts' });
+      const EP_B = EP_A.extends({ uri: '/account/{id}' });
+
+      const a = EP_A.new();
+      const b = EP_B.new({ id: 20 });
+
+      log(a); log(b);
+      assert.equal(a.url, 'http://localhost/shopping_carts');
+      assert.equal(b.url, 'http://localhost/account/20');
     });
-    const ModelC = ModelA.extends({
-      methods: {
-        greeting() { return 'C'; },
-        day() { return 'Monday'; },
-      },
-    });
-    const ModelD = ModelC.extends({
-      methods: {
-        greeting() { return 'D'; },
-        day() {
-          return '-12:04AM';
-        },
-      },
-    });
-
-    const objC = new ModelC();
-    const objA = new ModelA();
-    const objD = new ModelD();
-    const objB = new ModelB();
-    const objB2 = new ModelB({
-      model: {
-        name: 'ok', age: 13,
-      },
-    });
-
-    expect(objA.greeting()).toBe('A');
-    expect(objA.name()).toBe('wassy');
-
-    expect(objB.greeting()).toBe('A');
-    expect(objB.name()).toBe('moh');
-    expect(objB2.name()).toBe('moh');
-    expect(objB2.age).toBe(13);
-
-    expect(objC.greeting()).toBe('C');
-    expect(objC.name()).toBe('wassy');
-    expect(objC.day()).toBe('Monday');
-
-    expect(objD.greeting()).toBe('D');
-    expect(objD.name()).toBe('wassy');
-    expect(objD.day()).toBe('Monday-12:04AM');
   });
-  */
 });
